@@ -32,8 +32,14 @@ async function callBedrockModel(prompt: string): Promise<string> {
     const command = new InvokeModelCommand(input);
     const response = await bedrockClient.send(command);
     const responseBody = Buffer.from(await response.body).toString('utf-8');
-    // console.log(responseBody);
-    return responseBody || 'No response from the model.';
+    const responseObject = JSON.parse(responseBody);
+    const contentArray = responseObject?.content || [];
+    const textContent = contentArray
+      .filter((item: any) => item.type === 'text') // "text" 타입 필터링
+      .map((item: any) => item.text) // "text" 필드만 추출
+      .join('\n'); // 여러 개의 text가 있을 경우 줄바꿈으로 연결
+
+    return textContent || 'No response from the model.';
   } catch (error) {
     console.error('Error calling Bedrock API:', error);
     return 'Error processing your request.';
@@ -42,8 +48,7 @@ async function callBedrockModel(prompt: string): Promise<string> {
 
 // Task 수행 함수 생성
 export async function requestTranslation(national: string, text: string) {
-  const prompt = `Translate the following text to ${national}: \n ${text}`;
-  const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
+  const prompt = `Translate the following text to ${national}: \n ${text}\nONLY return the translated text of the given text and do not add additional words.`;
   const responseText = await callBedrockModel(prompt);
   return responseText;
 }
