@@ -8,6 +8,7 @@ import { registerWelcomeEvents } from './welcome';
 import { registerAdminEvents } from './admin';
 import { registerNetworkCommands, registerNetworkViewHandler } from './network';
 import { registerTradeEvents } from './trade';
+import { registerTodayConversationEvents } from './today';
 
 dotenv.config();
 
@@ -65,6 +66,7 @@ registerReactionAddedEvent();
 registerWelcomeEvents();
 registerAdminEvents();
 registerTradeEvents();
+registerTodayConversationEvents();
 registerNetworkCommands(boltApp);
 registerNetworkViewHandler(boltApp);
 
