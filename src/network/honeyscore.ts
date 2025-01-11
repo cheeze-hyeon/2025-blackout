@@ -1,4 +1,5 @@
 // src/network/honeyscore.ts
+
 import { App, KnownEventFromType } from '@slack/bolt';
 
 // 메시지 이벤트용 타입 별칭
@@ -8,7 +9,7 @@ type SlackMessageEvent = KnownEventFromType<'message'> & {
 
 /**
  * DM방(채널)마다 다음과 같이 매핑합니다:
- *   dmChannelMap[channelId] = { networkName: string, teamNumber: number }
+ *   dmChannelMap[channelId] = { networkName: string; teamNumber: number }
  */
 export const dmChannelMap: Record<string, { networkName: string; teamNumber: number }> = {};
 
@@ -26,7 +27,6 @@ export function registerHoneyScore(app: App) {
   //    - 봇 메시지(subtype === 'bot_message')는 카운트하지 않음
   app.event('message', async ({ event, logger }) => {
     try {
-      // 메시지 형식을 좁혀서 사용하기 위해 GenericMessageEvent로 캐스팅
       const msg = event as SlackMessageEvent;
       
       // subtype이 'bot_message'면 무시(봇이 보낸 메시지)
@@ -37,7 +37,9 @@ export function registerHoneyScore(app: App) {
       // 채널 ID별로 카운트
       const channelId = msg.channel;
       channelScoreMap[channelId] = (channelScoreMap[channelId] || 0) + 1;
-      logger.info(`Channel ${channelId} message count = ${channelScoreMap[channelId]}`);
+      logger.info(
+        `Channel ${channelId} message count = ${channelScoreMap[channelId]}`
+      );
     } catch (error) {
       logger.error('Error counting message:', error);
     }
@@ -48,12 +50,17 @@ export function registerHoneyScore(app: App) {
     await ack();
 
     try {
-      // 사용자가 입력한 전체 텍스트 파싱 (예: "/score 해커톤 1")
-      const text = command.text.trim(); 
+      // 사용자가 입력한 전체 텍스트
+      const text = command.text.trim();
+      logger.debug(`[DEBUG] Full command text => "${text}"`);
+
+      // 공백으로 split
       const parts = text.split(/\s+/);
+      logger.debug(`[DEBUG] Split parts =>`, parts);
 
       // 최소 2개 이상의 토큰이 있어야 [네트워킹 이름, 조 번호] 구조가 성립
       if (parts.length < 2) {
+        logger.debug('[DEBUG] parts.length < 2 => Not enough tokens');
         await client.chat.postMessage({
           channel: command.channel_id,
           text: '사용법: `/score 네트워킹이름 조번호` (예: `/score 봄맞이 해커톤 3`)',
@@ -61,10 +68,17 @@ export function registerHoneyScore(app: App) {
         return;
       }
 
+      // 마지막 토큰 = 조 번호
       const teamNumberStr = parts.pop() as string;
       const enteredteamNumber = parseInt(teamNumberStr, 10);
 
+      logger.debug(
+        `[DEBUG] teamNumberStr = "${teamNumberStr}", parsed => ${enteredteamNumber}`
+      );
+
+      // 파싱 실패 시
       if (Number.isNaN(enteredteamNumber)) {
+        logger.debug('[DEBUG] enteredteamNumber is NaN');
         await client.chat.postMessage({
           channel: command.channel_id,
           text: '조 번호가 유효한 숫자가 아닙니다. 예: `/score 해커톤 3`',
@@ -72,13 +86,20 @@ export function registerHoneyScore(app: App) {
         return;
       }
 
+      // 나머지는 네트워킹 이름
       const enteredNetworkName = parts.join(' ');
+      logger.debug(`[DEBUG] enteredNetworkName = "${enteredNetworkName}"`);
 
-      // 슬래시 커맨드를 입력한 채널 (현재 DM창)
+      // 슬래시 커맨드를 입력한 채널
       const channelId = command.channel_id;
+      logger.debug(`[DEBUG] channelId => ${channelId}`);
 
-      // 매핑 정보가 없으면 → "다른 조의 점수는 볼 수 없습니다."
-      if (!dmChannelMap[channelId]) {
+      // 매핑 정보 조회
+      const dmInfo = dmChannelMap[channelId];
+      logger.debug(`[DEBUG] dmChannelMap[${channelId}] =>`, dmInfo);
+
+      if (!dmInfo) {
+        logger.debug('[DEBUG] No dmInfo found => sending "다른 조의 점수는 볼 수 없습니다."');
         await client.chat.postMessage({
           channel: channelId,
           text: '다른 조의 점수는 볼 수 없습니다.',
@@ -86,22 +107,27 @@ export function registerHoneyScore(app: App) {
         return;
       }
 
-      // 실제 DM채널에 매핑되어 있는 정보
-      const { networkName, teamNumber } = dmChannelMap[channelId];
+      // 실제 DM채널에 매핑된 정보
+      const { networkName, teamNumber } = dmInfo;
+      logger.debug(`[DEBUG] Actual (networkName, teamNumber) => ("${networkName}", ${teamNumber})`);
 
-      // 사용자가 입력한 (네트워킹 이름, 조번호)와 이 DM채널이 일치?
+      // 비교 로직
       if (
         networkName === enteredNetworkName &&
         teamNumber === enteredteamNumber
       ) {
-        // 점수 가져와서 안내
+        logger.debug('[DEBUG] => networkName/teamNumber matches user input!');
+        // 점수
         const score = channelScoreMap[channelId] || 0;
         await client.chat.postMessage({
           channel: channelId,
           text: `${networkName} ${teamNumber}조의 Honey Score는 ${score}점입니다!`,
         });
       } else {
-        // 불일치 → 권한없음 메시지
+        logger.debug(
+          '[DEBUG] => Mismatch: ' +
+            `("${networkName}" vs "${enteredNetworkName}") / (${teamNumber} vs ${enteredteamNumber})`
+        );
         await client.chat.postMessage({
           channel: channelId,
           text: '다른 조의 점수는 볼 수 없습니다.',
