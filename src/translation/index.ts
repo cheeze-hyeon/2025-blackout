@@ -1,10 +1,10 @@
-import { app } from '../app';
+import { boltApp } from '../index';
 import { useTranslation } from './api';
 import { isTranslateRequestReaction } from './const';
 import { WebClient } from '@slack/web-api';
 
 export const registerReactionAddedEvent = () => {
-  app.event('reaction_added', async ({ event, client, say, body }) => {
+  boltApp.event('reaction_added', async ({ event, client, say, body }) => {
     const { user, reaction, item, item_user } = event;
     if (item.type !== 'message') return;
     const isTranslationReaction = isTranslateRequestReaction(reaction);
