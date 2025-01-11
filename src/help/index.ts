@@ -11,18 +11,18 @@ export function registerHelpCommand(app: App) {
     await ack();
 
     const helpMessage = `
-*HOW TO USE GLOBEE🐝*
+*GloBee🐝 도움말*
 
-- \`/help\`
+- *\`/help\`*
     GloBee🐝 도움말을 출력합니다.
 
-- \`/globee_start\`
+- *\`/globee_start\`*
     사용자 정보를 다시 입력할 수 있습니다.
 
-- \`/today\`
+- *\`/today\`*
     *#오늘의-회화* 채널에 지정된 국가의 오늘의 회화 구문을 제공합니다.
 
-- \`/trade\`
+- *\`/trade\`*
     *#물건-팝니다-삽니다* 채널에 새로운 거래를 등록할 수 있습니다.
 
 - *번역*
