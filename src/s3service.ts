@@ -35,33 +35,6 @@ async function uploadToS3(fileBuffer: Buffer, fileName: string) {
   }
 }
 
-// // 파일 다운로드 함수
-// async function getFromS3(fileName: string) {
-//   try {
-//     const response = await s3Client.send(
-//       new GetObjectCommand({
-//         Bucket: 'blackout-15-globee', // 여기에 실제 버킷 이름을 넣으세요
-//         Key: fileName,
-//       }),
-//     );
-
-//     console.log('S3 다운로드 완료:', fileName);
-
-//     if (response.Body instanceof Readable) {
-//       const chunks: Buffer[] = [];
-//       for await (const chunk of response.Body) {
-//         chunks.push(chunk);
-//       }
-//       return Buffer.concat(chunks);
-//     } else {
-//       throw new Error('S3 응답 스트림 변환 실패');
-//     }
-//   } catch (error) {
-//     console.error('S3 다운로드 에러:', error);
-//     throw error;
-//   }
-// }
-
 async function getFileFromS3(bucket: string, key: string): Promise<string> {
   const command = new GetObjectCommand({
     Bucket: bucket,
@@ -69,7 +42,6 @@ async function getFileFromS3(bucket: string, key: string): Promise<string> {
   });
 
   const response = await s3Client.send(command);
-  // Stream을 문자열로 변환
   const str = await response.Body?.transformToString();
   return str || '';
 }
