@@ -36,7 +36,7 @@ jobs:
         npm install
 
     - name: Restart Server
-      uses: appleboy/ssh-action@v0.1.0
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_IP }} 
         username: ec2-user            
