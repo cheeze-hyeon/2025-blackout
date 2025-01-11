@@ -1,12 +1,13 @@
 // src/index.ts
 
-import { App, ExpressReceiver } from '@slack/bolt';
+import express from 'express';
 import * as dotenv from 'dotenv';
+import { App, ExpressReceiver } from '@slack/bolt';
 import { registerReactionAddedEvent } from './translation';
 import { registerWelcomeEvents } from './welcome';
 import { registerAdminEvents } from './admin';
 import { registerNetworkCommands, registerNetworkViewHandler } from './network';
-import express from 'express';
+import { registerTradeEvents } from './trade';
 
 dotenv.config();
 
@@ -63,6 +64,7 @@ boltApp.action('button_click', async ({ ack, body, client }) => {
 registerReactionAddedEvent();
 registerWelcomeEvents();
 registerAdminEvents();
+registerTradeEvents();
 registerNetworkCommands(boltApp);
 registerNetworkViewHandler(boltApp);
 
