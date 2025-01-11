@@ -60,7 +60,7 @@ boltApp.action('button_click', async ({ ack, body, client }) => {
 
 registerAdminEvents();
 registerWelcomeEvents();
-registerReactionAddedEvent();
+// registerReactionAddedEvent();
 registerNetworkViewHandler(boltApp);
 
 // 서버 실행
