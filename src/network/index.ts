@@ -1,10 +1,8 @@
-// src/network/index.ts
-
 import { App, SlashCommand, Logger } from '@slack/bolt';
 import { WebClient, View } from '@slack/web-api';
 import { isUserAdmin } from '../utils/admin';
 import { requestIcebreaking } from '../AImodel';
-import { dmChannelMap } from './honeyscore';
+import { saveChannelData } from './honeyscore';
 
 // 인메모리 워크스페이스 정보 저장소 (중복 제거: admin/index.ts과 별개로 관리됨)
 let workspaceInfo: WorkspaceInfo = {
@@ -301,10 +299,12 @@ export function registerNetworkViewHandler(app: App) {
           continue;
         }
 
-        dmChannelMap[mpimChannelId] = {
+        const channelData = {
           networkName,
           teamNumber: i + 1,
+          score: 0,
         };
+        await saveChannelData(mpimChannelId, channelData, logger);
 
         const icebreakingResult = await requestIcebreaking(networkName);
         console.log('icebraeking', icebreakingResult);
