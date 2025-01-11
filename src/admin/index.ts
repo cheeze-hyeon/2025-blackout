@@ -1,17 +1,22 @@
+// src/admin/index.ts
+
 import { boltApp } from '../index';
-import { BlockAction, SlashCommand, ViewSubmitAction } from '@slack/bolt';
+import { SlashCommand, Logger } from '@slack/bolt';
 import { WebClient } from '@slack/web-api';
+import { isUserAdmin } from '../utils/admin';
 
 // 인메모리 워크스페이스 정보 저장소
 let workspaceInfo: WorkspaceInfo = {
   country: '',
   university: '',
+  universitySite: '', // 추가된 필드
 };
 
 // 워크스페이스 정보 인터페이스
 interface WorkspaceInfo {
   country: string;
   university: string;
+  universitySite: string; // 추가된 필드
 }
 
 /**
@@ -70,6 +75,22 @@ const openWorkspaceInfoModal = async (client: WebClient, triggerId: string) => {
             text: '대학',
           },
         },
+        {
+          type: 'input',
+          block_id: 'university_site_block',
+          element: {
+            type: 'plain_text_input',
+            action_id: 'universitySite',
+            placeholder: {
+              type: 'plain_text',
+              text: '대학 웹사이트 주소를 입력하세요',
+            },
+          },
+          label: {
+            type: 'plain_text',
+            text: '대학 웹사이트',
+          },
+        },
       ],
     },
   });
@@ -78,41 +99,36 @@ const openWorkspaceInfoModal = async (client: WebClient, triggerId: string) => {
 /**
  * 관리자 전용 이벤트 핸들러를 등록합니다.
  */
-export const registerAdminEvents = async() => {
+export const registerAdminEvents = async () => {
   // '/globee_admin' 명령어 핸들러 등록
   boltApp.command('/globee_admin', async ({ command, ack, client, logger }) => {
     await ack();
 
-    try {
-      const triggerId = command.trigger_id;
-      const userId = command.user_id;
+    const { trigger_id, user_id, channel_id } = command;
 
-      if (!triggerId || !userId) {
+    logger.info(`Received /globee_admin command from user: ${user_id} in channel: ${channel_id}`);
+
+    try {
+      if (!trigger_id || !user_id) {
         logger.error('trigger_id 또는 user_id가 존재하지 않습니다.');
         return;
       }
 
-      // 사용자 정보 가져오기
-      const userInfo = await client.users.info({ user: userId });
-      if (!userInfo.ok || !userInfo.user) {
-        logger.error(`사용자 정보 가져오기 실패: ${userId}`);
-        return;
-      }
-
-      const isAdmin = userInfo.user.is_admin || false;
+      // 관리자 여부 확인
+      const isAdmin = await isUserAdmin(client, user_id, logger);
 
       if (!isAdmin) {
         // 관리자가 아닌 경우 권한 없음 메시지 전송
         await client.chat.postEphemeral({
-          channel: command.channel_id,
-          user: userId,
+          channel: channel_id,
+          user: user_id,
           text: '이 명령어를 사용할 권한이 없습니다.',
         });
         return;
       }
 
       // 모달 열기
-      await openWorkspaceInfoModal(client, triggerId);
+      await openWorkspaceInfoModal(client, trigger_id);
     } catch (error) {
       logger.error('워크스페이스 정보 모달 열기 중 오류 발생:', error);
     }
@@ -134,8 +150,9 @@ export const registerAdminEvents = async() => {
       // 입력된 값 추출
       const country = values.country_block?.country?.value?.trim();
       const university = values.university_block?.university?.value?.trim();
+      const universitySite = values.university_site_block?.universitySite?.value?.trim();
 
-      if (!country || !university) {
+      if (!country || !university || !universitySite) {
         // 필수 입력값이 누락된 경우
         await client.chat.postEphemeral({
           channel: userId,
@@ -149,6 +166,7 @@ export const registerAdminEvents = async() => {
       workspaceInfo = {
         country,
         university,
+        universitySite, // 추가된 필드 저장
       };
 
       // 확인 메시지 전송

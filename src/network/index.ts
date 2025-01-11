@@ -2,9 +2,9 @@
 
 import { App, SlashCommand, Logger } from '@slack/bolt';
 import { WebClient, View } from '@slack/web-api';
-import { boltApp } from '../index'; // index.ts에서 export한 boltApp
+import { isUserAdmin } from '../utils/admin';
 
-// 인메모리 워크스페이스 정보 저장소
+// 인메모리 워크스페이스 정보 저장소 (중복 제거: admin/index.ts과 별개로 관리됨)
 let workspaceInfo: WorkspaceInfo = {
   country: '',
   university: '',
@@ -21,11 +21,25 @@ interface WorkspaceInfo {
  * - 모달 열기만 수행하고, 실제 모달 제출 핸들러는 registerNetworkViewHandler에서 담당
  */
 export async function handleNetworkCommand(command: SlashCommand, client: WebClient, logger: Logger) {
-  const { trigger_id, channel_id } = command;
+  const { trigger_id, channel_id, user_id } = command;
 
-  logger.info(`Received /network command in channel: ${channel_id}`);
+  logger.info(`Received /network command from user: ${user_id} in channel: ${channel_id}`);
 
   try {
+    // 관리자 여부 확인
+    const isAdmin = await isUserAdmin(client, user_id, logger);
+
+    if (!isAdmin) {
+      // 관리자가 아닌 경우 권한 없음 메시지 전송
+      await client.chat.postEphemeral({
+        channel: channel_id,
+        user: user_id,
+        text: '이 명령어를 사용할 권한이 없습니다.',
+      });
+      return;
+    }
+
+    // 채널 멤버 가져오기
     const result = await client.conversations.members({
       channel: channel_id,
       limit: 1000,
@@ -174,7 +188,11 @@ export async function handleNetworkCommand(command: SlashCommand, client: WebCli
   } catch (error) {
     logger.error('Error opening modal:', error);
     // 에러 응답 처리
-    // 사용자에게 에러 메시지 전송 (필요 시)
+    await client.chat.postEphemeral({
+      channel: channel_id,
+      user: user_id,
+      text: '네트워크 명령어를 처리하는 중 오류가 발생했습니다.',
+    });
   }
 }
 
