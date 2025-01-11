@@ -13,6 +13,7 @@ import { registerHelpCommand } from './help';
 import { registerAdminHelpCommand } from './admin_help';
 import { registerHoneyScore } from './network/honeyscore';
 import { useUpdateCrawlingLink } from './crawling';
+import { registerAskCommand } from './ask';
 
 dotenv.config();
 
@@ -76,6 +77,7 @@ registerNetworkViewHandler(boltApp);
 registerHelpCommand(boltApp);
 registerAdminHelpCommand(boltApp);
 registerHoneyScore(boltApp);
+registerAskCommand(boltApp);
 setInterval(async () => {
   const result = await useUpdateCrawlingLink(
     'computer',
