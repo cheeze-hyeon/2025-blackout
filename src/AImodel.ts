@@ -12,19 +12,24 @@ import {
 // BedrockClient
 const bedrockClient = new BedrockRuntimeClient({ region: 'us-east-1' });
 
-// Custom prompt 목록
-// const prompts: Record<string, string> = {
-//   greeting: 'You are a friendly assistant. Respond in a cheerful way:',
-//   summary: 'Summarize the following text in a concise manner:',
-//   customAI: 'Perform custom AI logic based on:',
-// };
-
 // AWS Bedrock 함수
 async function callBedrockModel(prompt: string): Promise<string> {
   const modelId = 'anthropic.claude-3-5-sonnet-20241022-v2:0';
+
+  const payload = {
+    anthropic_version: 'bedrock-2023-05-31',
+    max_tokens: 2048,
+    messages: [
+      {
+        role: 'user',
+        content: [{ type: 'text', text: prompt }],
+      },
+    ],
+  };
+
   const input = {
     modelId,
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ payload }),
     contentType: 'application/json',
   };
 
@@ -47,12 +52,14 @@ export async function requestTranslation(national: string, text: string) {
   return responseText;
 }
 
-async function requestInformation(national: string, text: string) {
-  const prompt = `Translate the following text to ${national}: \n ${text}`;
+async function requestInformation(hashtag: string, text: string) {
+  const prompt = `Find the information that related to keywords;${hashtag}.\n ${text}`;
   const responseText = await callBedrockModel(prompt);
+  return responseText;
 }
 
-async function request(national: string, text: string) {
-  const prompt = `Translate the following text to ${national}: \n ${text}`;
+async function requestHelpService(text: string) {
+  const prompt = `You are a pleasant AI assistant. Answer to the given request as much as you can: ${text}`;
   const responseText = await callBedrockModel(prompt);
+  return responseText;
 }
