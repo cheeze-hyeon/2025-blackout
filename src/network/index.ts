@@ -3,6 +3,7 @@
 import { App, SlashCommand, Logger } from '@slack/bolt';
 import { WebClient, View } from '@slack/web-api';
 import { isUserAdmin } from '../utils/admin';
+import { requestIcebreaking } from '../AImodel';
 
 // 인메모리 워크스페이스 정보 저장소 (중복 제거: admin/index.ts과 별개로 관리됨)
 let workspaceInfo: WorkspaceInfo = {
@@ -20,10 +21,16 @@ interface WorkspaceInfo {
  * /network 슬래시 커맨드를 처리하는 함수.
  * - 모달 열기만 수행하고, 실제 모달 제출 핸들러는 registerNetworkViewHandler에서 담당
  */
-export async function handleNetworkCommand(command: SlashCommand, client: WebClient, logger: Logger) {
+export async function handleNetworkCommand(
+  command: SlashCommand,
+  client: WebClient,
+  logger: Logger,
+) {
   const { trigger_id, channel_id, user_id } = command;
 
-  logger.info(`Received /network command from user: ${user_id} in channel: ${channel_id}`);
+  logger.info(
+    `Received /network command from user: ${user_id} in channel: ${channel_id}`,
+  );
 
   try {
     // 관리자 여부 확인
@@ -176,7 +183,9 @@ export async function handleNetworkCommand(command: SlashCommand, client: WebCli
       blocks,
     };
 
-    logger.info(`Opening network modal with trigger_id: ${trigger_id} and members count: ${memberCount}`);
+    logger.info(
+      `Opening network modal with trigger_id: ${trigger_id} and members count: ${memberCount}`,
+    );
 
     // 모달 열기
     await client.views.open({
@@ -271,7 +280,9 @@ export function registerNetworkViewHandler(app: App) {
         if (userIds.length > 8) {
           await client.chat.postMessage({
             channel: channelId,
-            text: `조 ${i + 1} 인원이 8명을 초과하여 DM 방을 생성할 수 없습니다.`,
+            text: `조 ${
+              i + 1
+            } 인원이 8명을 초과하여 DM 방을 생성할 수 없습니다.`,
           });
           continue;
         }
@@ -289,9 +300,18 @@ export function registerNetworkViewHandler(app: App) {
           continue;
         }
 
+        const icebreakingResult = await requestIcebreaking(networkName);
+        console.log('icebraeking', icebreakingResult);
+
         await client.chat.postMessage({
           channel: mpimChannelId,
-          text: `*${networkName}* - 조 ${i + 1} 멤버들끼리의 단체 DM입니다! 자유롭게 대화하세요.`,
+          text: `*${networkName}* - 조 ${
+            i + 1
+          } 멤버들끼리의 단체 DM입니다! 자유롭게 대화하세요.`,
+        });
+        await client.chat.postMessage({
+          channel: mpimChannelId,
+          text: `${icebreakingResult}`,
         });
       }
     } catch (error) {

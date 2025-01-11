@@ -55,7 +55,7 @@ export async function requestTranslation(national: string, text: string) {
 }
 
 // Icebreaking 봇봇
-async function requestIcebreaking(team: string) {
+export async function requestIcebreaking(team: string) {
   const prompt = `Given a team name as input, your task is to create an icebreaking output designed to lighten the atmosphere and foster team bonding. The response should include:
   1. A fun or encouraging statement related to the team name to set the tone at first sentence.
   2. A set of questions or topics that help team members learn more about each other in a friendly, engaging way.
@@ -75,7 +75,7 @@ async function requestIcebreaking(team: string) {
 }
 
 // 오늘의 일상회화 표현현
-async function requestConvers(country: string) {
+export async function requestConvers(country: string) {
   const prompt = `Given a country name as input, your task is to provide a simple, everyday conversational expression or phrase commonly used in that country. Include a brief explanation of its meaning and context (e.g., greeting, thanking, casual talk). Ensure the content is fresh and different for each new request, even for the same country.
 
   =================================================
@@ -91,13 +91,13 @@ async function requestConvers(country: string) {
 }
 
 // 그냥 무엇이든 물어봐 느낌의 prompt
-async function requestHelpService(text: string) {
+export async function requestHelpService(text: string) {
   const prompt = `You are a pleasant AI assistant. Answer to the given request as much as you can: ${text}`;
   const responseText = await callBedrockModel(prompt);
   return responseText;
 }
 
-async function requestInformation(hashtag: string, text: string) {
+export async function requestInformation(hashtag: string, text: string) {
   const prompt = `Find the information that related to keywords;${hashtag}.\n${text}`;
   const responseText = await callBedrockModel(prompt);
   return responseText;
