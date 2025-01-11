@@ -24,7 +24,7 @@ const openTradeInfoModal = async (client: WebClient, triggerId: string) => {
     trigger_id: triggerId,
     view: {
       type: 'modal',
-      callback_id: 'trade',
+      callback_id: 'trade_info_modal',
       title: {
         type: 'plain_text',
         text: '물건 나눔 & 거래',
