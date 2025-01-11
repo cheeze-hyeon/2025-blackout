@@ -47,6 +47,7 @@ jobs:
           cd /home/globee
           git pull origin main
           npm install
-          pm2 restart server.js || pm2 start server.js
+          npm run build
+          pm2 restart index.js || pm2 start index.js
           echo "Deployment complete!"
 
