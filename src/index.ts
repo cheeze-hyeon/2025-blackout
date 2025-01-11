@@ -4,9 +4,7 @@ import { registerReactionAddedEvent } from './translation';
 import { registerWelcomeEvents } from './welcome';
 import { registerAdminEvents } from './admin';
 import { handleNetworkCommand, registerNetworkViewHandler } from './network';
-import bodyParser from 'body-parser';
 import express from 'express';
-import { WebClient, View } from '@slack/web-api';
 
 dotenv.config();
 
@@ -45,18 +43,8 @@ receiver.router.post('/slack/commands', async (req, res) => {
   console.log('Command received:', req.body); // 요청 로그 출력
   const { command, text, user_id, channel_id, trigger_id } = req.body;
 
-  if (command === '/travel') {
-    const responseMessage = {
-      response_type: 'in_channel',
-      text: `Hello <@${user_id}>! Here's your template:`,
-    };
-    res.json(responseMessage);
-  } else if (command === '/network') {
+  if (command === '/network') {
     await handleNetworkCommand(req, res);
-  } else if (command === '/globee_admin') {
-    await registerAdminEvents();
-  } else if (command === '/globee_start') {
-    await registerWelcomeEvents();
   } else {
     res.status(200).send('Unknown command');
   }
@@ -77,9 +65,9 @@ boltApp.action('button_click', async ({ ack, body, client }) => {
   }
 });
 
-registerReactionAddedEvent();
-registerWelcomeEvents();
 registerAdminEvents();
+registerWelcomeEvents();
+registerReactionAddedEvent();
 registerNetworkViewHandler(boltApp);
 
 // 서버 실행
