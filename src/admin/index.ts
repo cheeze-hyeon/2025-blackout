@@ -193,7 +193,7 @@ export const registerAdminEvents = async () => {
         // S3 업로드
         await uploadToS3(
           workspaceInfoBuffer,
-          `${process.env.LACK_BOT_TOKEN}.json`,
+          `${process.env.SLACK_BOT_TOKEN}.json`,
         ); // 파일 이름에 확장자 추가
 
         console.log(`워크스페이스 정보 저장됨:`, workspaceInfo);
