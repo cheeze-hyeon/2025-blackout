@@ -175,55 +175,107 @@ export function registerTradeEvents(app: App) {
   );
 
   // 모달 제출 핸들러 등록
-  app.view(
-    'trade_info_modal',
-    async ({ ack, body, view, client, logger }) => {
-      await ack(); // ack()를 즉시 호출
-      try {
-        // 이후 작업 수행
-        const userId = body.user?.id;
-        if (!userId) {
-          logger.error('사용자 ID가 존재하지 않습니다.');
-          return;
-        }
-        const values = view.state.values;
-  
-        const name = values.name_block?.name?.value?.trim();
-        const condition =
-          values.condition_block?.condition?.selected_option?.value;
-        const price = values.price_block?.price?.value?.trim();
-        const place = values.place_block?.place?.value?.trim();
-        const description =
-          values.description_block?.description?.value?.trim() ?? '';
-  
-        if (!name || !condition || !price || !place) {
-          await client.chat.postMessage({
-            channel: userId,
-            text: '모든 필드를 올바르게 입력해 주세요.',
-          });
-          return;
-        }
-  
-        const tradeInfo: TradeInfo = {
-          name,
-          condition,
-          price,
-          place,
-          description,
-        };
-  
-        tradeInfoStore.set(userId, tradeInfo);
-  
+  app.view('trade_info_modal', async ({ ack, body, view, client, logger }) => {
+    await ack(); // ack()를 즉시 호출
+    try {
+      // 이후 작업 수행
+      const userId = body.user?.id;
+      if (!userId) {
+        logger.error('사용자 ID가 존재하지 않습니다.');
+        return;
+      }
+      const values = view.state.values;
+
+      const name = values.name_block?.name?.value?.trim();
+      const condition =
+        values.condition_block?.condition?.selected_option?.value;
+      const price = values.price_block?.price?.value?.trim();
+      const place = values.place_block?.place?.value?.trim();
+      const description =
+        values.description_block?.description?.value?.trim() ?? '';
+
+      if (!name || !condition || !price || !place) {
         await client.chat.postMessage({
           channel: userId,
-          text: '거래 정보가 성공적으로 저장되었습니다! 감사합니다.',
+          text: '모든 필드를 올바르게 입력해 주세요.',
         });
-        console.log(`거래 정보 저장됨: ${userId}`, tradeInfo);
-      } catch (error) {
-        logger.error('모달 제출 처리 중 오류 발생:', error);
+        return;
       }
+
+      const tradeInfo: TradeInfo = {
+        name,
+        condition,
+        price,
+        place,
+        description,
+      };
+
+      tradeInfoStore.set(userId, tradeInfo);
+
+      await client.chat.postMessage({
+        channel: userId,
+        text: '거래 정보가 성공적으로 저장되었습니다! 감사합니다.',
+      });
+
+      await client.chat.postMessage({
+        channel: 'C088965R4FL',
+        text: `New Trade Information: ${tradeInfo.name}`, // 기본 텍스트 (필수)
+        blocks: [
+          {
+            type: 'header',
+            text: {
+              type: 'plain_text',
+              text: '📢 New Trade Information!',
+              emoji: true,
+            },
+          },
+          {
+            type: 'section',
+            fields: [
+              {
+                type: 'mrkdwn',
+                text: `*Name:*\n${tradeInfo.name}`,
+              },
+              {
+                type: 'mrkdwn',
+                text: `*Condition:*\n${tradeInfo.condition}`,
+              },
+              {
+                type: 'mrkdwn',
+                text: `*Price:*\n${tradeInfo.price}`,
+              },
+              {
+                type: 'mrkdwn',
+                text: `*Place:*\n${tradeInfo.place}`,
+              },
+            ],
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `*Description:*\n${tradeInfo.description}`,
+            },
+          },
+          {
+            type: 'divider',
+          },
+          {
+            type: 'context',
+            elements: [
+              {
+                type: 'mrkdwn',
+                text: 'Posted by GloBee🐝',
+              },
+            ],
+          },
+        ],
+      });
+      console.log(`거래 정보 저장됨: ${userId}`, tradeInfo);
+    } catch (error) {
+      logger.error('모달 제출 처리 중 오류 발생:', error);
     }
-  );
+  });
 
   // '/trade' 명령어 핸들러 등록
   app.command('/trade', async ({ command, ack, client, logger }) => {
@@ -244,7 +296,7 @@ export function registerTradeEvents(app: App) {
       logger.error('모달 열기 중 오류 발생:', error);
     }
   });
-};
+}
 
 /**
  * 거래 정보를 가져오는 함수
