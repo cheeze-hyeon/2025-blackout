@@ -32,7 +32,7 @@ async function callBedrockModel(prompt: string): Promise<string> {
     const command = new InvokeModelCommand(input);
     const response = await bedrockClient.send(command);
     const responseBody = Buffer.from(await response.body).toString('utf-8');
-    console.log(responseBody);
+    // console.log(responseBody);
     return responseBody || 'No response from the model.';
   } catch (error) {
     console.error('Error calling Bedrock API:', error);
@@ -41,9 +41,10 @@ async function callBedrockModel(prompt: string): Promise<string> {
 }
 
 // Task 수행 함수 생성
-async function requestTranslation(national: string, text: string) {
+export async function requestTranslation(national: string, text: string) {
   const prompt = `Translate the following text to ${national}: \n ${text}`;
   const responseText = await callBedrockModel(prompt);
+  return responseText;
 }
 
 async function requestInformation(national: string, text: string) {
