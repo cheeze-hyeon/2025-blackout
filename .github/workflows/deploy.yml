@@ -45,7 +45,7 @@ jobs:
         options: '-o StrictHostKeyChecking=no'
         script: |
           pwd
-          cd /home/2025-blackout
+          cd 2025-blackout
           git pull origin main
           npm install
           npm run build
