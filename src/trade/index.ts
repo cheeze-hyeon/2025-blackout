@@ -69,21 +69,21 @@ const openTradeInfoModal = async (client: WebClient, triggerId: string) => {
                   type: 'plain_text',
                   text: '새 제품',
                 },
-                value: 'new',
+                value: '새 제품',
               },
               {
                 text: {
                   type: 'plain_text',
                   text: '약간 사용',
                 },
-                value: 'used',
+                value: '약간 사용',
               },
               {
                 text: {
                   type: 'plain_text',
                   text: '사용감 있음',
                 },
-                value: 'worn',
+                value: '사용감 있음',
               },
             ],
           },
@@ -225,7 +225,7 @@ export function registerTradeEvents(app: App) {
             type: 'header',
             text: {
               type: 'plain_text',
-              text: '📢 New Trade Information!',
+              text: '📢 새로운 거래 등록!',
               emoji: true,
             },
           },
@@ -234,19 +234,19 @@ export function registerTradeEvents(app: App) {
             fields: [
               {
                 type: 'mrkdwn',
-                text: `*Name:*\n${tradeInfo.name}`,
+                text: `*물품명:*\n${tradeInfo.name}`,
               },
               {
                 type: 'mrkdwn',
-                text: `*Condition:*\n${tradeInfo.condition}`,
+                text: `*상태:*\n${tradeInfo.condition}`,
               },
               {
                 type: 'mrkdwn',
-                text: `*Price:*\n${tradeInfo.price}`,
+                text: `*가격:*\n${tradeInfo.price}`,
               },
               {
                 type: 'mrkdwn',
-                text: `*Place:*\n${tradeInfo.place}`,
+                text: `*거래 장소:*\n${tradeInfo.place}`,
               },
             ],
           },
@@ -254,7 +254,7 @@ export function registerTradeEvents(app: App) {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `*Description:*\n${tradeInfo.description}`,
+              text: `*부가 설명:*\n${tradeInfo.description}`,
             },
           },
           {
