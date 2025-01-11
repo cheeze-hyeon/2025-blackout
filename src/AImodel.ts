@@ -47,22 +47,58 @@ async function callBedrockModel(prompt: string): Promise<string> {
 }
 
 // Task 수행 함수 생성
+// 번역 기능능
 export async function requestTranslation(national: string, text: string) {
   const prompt = `Translate the following text to ${national}: \n ${text}\nONLY return the translated text of the given text and do not add additional words.`;
   const responseText = await callBedrockModel(prompt);
   return responseText;
 }
 
-async function requestInformation(hashtag: string, text: string) {
-  const prompt = `Find the information that related to keywords;${hashtag}.\n ${text}`;
-  const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
+// Icebreaking 봇봇
+async function requestIcebreaking(team: string) {
+  const prompt = `Given a team name as input, your task is to create an icebreaking output designed to lighten the atmosphere and foster team bonding. The response should include:
+  1. A fun or encouraging statement related to the team name to set the tone at first sentence.
+  2. A set of questions or topics that help team members learn more about each other in a friendly, engaging way.
+  Given team name: ${team}
+
+  ================================================================
+  Example format of icebreaking; if the team name is 'Blue Hawks':
+
+  Blue Hawks always soar higher! Let’s find out what makes each of us soar!
+  Ask your team members:
+  - What’s your dream adventure or "soaring" moment?
+  - If you could pick any superpower that represents a hawk’s vision or speed, what would it be and why?
+  - What’s the best team experience you’ve ever had and why did it stand out?`;
+
   const responseText = await callBedrockModel(prompt);
   return responseText;
 }
 
+// 오늘의 일상회화 표현현
+async function requestConvers(country: string) {
+  const prompt = `Given a country name as input, your task is to provide a simple, everyday conversational expression or phrase commonly used in that country. Include a brief explanation of its meaning and context (e.g., greeting, thanking, casual talk). Ensure the content is fresh and different for each new request, even for the same country.
+
+  =================================================
+  Format the output as follows:
+
+  Country: ${country}
+  Phrase: "Phrase here"
+  Meaning and Context: "Brief Explanation here"
+  Example Usage: "Example Sentence here"\n`;
+
+  const responseText = await callBedrockModel(prompt);
+  return responseText;
+}
+
+// 그냥 무엇이든 물어봐 느낌의 prompt
 async function requestHelpService(text: string) {
   const prompt = `You are a pleasant AI assistant. Answer to the given request as much as you can: ${text}`;
-  const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
+  const responseText = await callBedrockModel(prompt);
+  return responseText;
+}
+
+async function requestInformation(hashtag: string, text: string) {
+  const prompt = `Find the information that related to keywords;${hashtag}.\n${text}`;
   const responseText = await callBedrockModel(prompt);
   return responseText;
 }
