@@ -62,7 +62,7 @@ export async function requestIcebreaking(team: string) {
 2. A list of friendly and relatable questions or topics that help team members learn more about each other.  
 
 The goal is to make the response fun and approachable while fostering a sense of connection within the team.
-The response should be ko-KR.
+The response should be ko-KR. And just return after "Ask your team members:".
 
 Example team name: ${team}
 
@@ -81,15 +81,17 @@ Example team name: ${team}
 
 // 오늘의 일상회화 표현현
 export async function requestConvers(country: string) {
-  const prompt = `Given a country name as input, your task is to provide a simple, everyday conversational expression or phrase commonly used in that country. Include a brief explanation of its meaning and context (e.g., greeting, thanking, casual talk). Ensure the content is fresh and different for each new request, even for the same country.
+  const prompt = `Given a country name as input, your task is to provide a practical and commonly used conversational expression or phrase from that country. The phrase should be something that a visitor or new resident might find helpful in everyday interactions, such as asking for help, giving directions, or understanding cultural nuances. Ensure the content is fresh and different for each new request, even for the same country.
+Format the output in a way that supports Slack's Markdown formatting. Use bold, italics, and proper indentation for readability. Include the following fields:
 
-  =================================================
-  Format the output as follows:
+=================================================
+Country: *${country}*
+Phrase: "*Practical Phrase Here*"
+Meaning and Context: "_Brief Explanation of When and Why to Use This Phrase_"
+Example Usage: \`Example Sentence Showing How This Phrase Would Be Used in a Real-Life Situation\`
 
-  Country: ${country}
-  Phrase: "Phrase here"
-  Meaning and Context: "Brief Explanation here"
-  Example Usage: "Example Sentence here"\n`;
+Make sure the phrases are both useful and culturally relevant, not just simple greetings or overly generic expressions.
+=================================================`;
 
   const responseText = await callBedrockModel(prompt);
   return responseText;
