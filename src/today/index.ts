@@ -2,8 +2,8 @@ import { boltApp } from '../index';
 import { Logger, BlockAction, SlashCommand } from '@slack/bolt'; // Command 제거
 import { WebClient } from '@slack/web-api';
 import { requestConvers } from '../AImodel';
-import { getFromS3 } from '../s3service';
 import axios from 'axios';
+import { getFileFromS3 } from '../s3service';
 
 export const registerTodayConversationEvents = async () => {
   // '/today' 명령어 핸들러 등록
@@ -20,17 +20,24 @@ export const registerTodayConversationEvents = async () => {
       }
 
       // TO DO: 어드민 워크스페이스 국가 정보 가져오기
-      const url = `https://blackout-15-globee.s3.us-east-1.amazonaws.com/${userId}.json`;
+      // const url = `https://blackout-15-globee.s3.us-east-1.amazonaws.com/${userId}.json`;
 
-      const response = await axios.get(url, {
-        responseType: 'json', // Automatically parses JSON response
-      });
+      // const response = await axios.get(url, {
+      //   responseType: 'json', // Automatically parses JSON response
+      // });
 
-      const userInfo = response.data;
+      // const userInfo = response.data;
 
-      console.log('Parsed User Info:', userInfo);
+      // console.log('Parsed User Info:', userInfo);
 
-      const country = userInfo?.nationality ?? 'america';
+      // const country = userInfo?.nationality ?? 'america';
+      // console.log('Country:', country);
+
+      const res = await getFileFromS3('blackout-15-globee', `${userId}.json`);
+      console.log('res', res);
+      const userInfo = JSON.parse(res);
+      console.log('userInfo', userInfo);
+      const country = userInfo?.nationality;
       console.log('Country:', country);
 
       const todayConversations = await requestConvers(country);
