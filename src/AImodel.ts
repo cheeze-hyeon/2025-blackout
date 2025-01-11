@@ -19,15 +19,11 @@ async function callBedrockModel(prompt: string): Promise<string> {
     modelId,
     body: JSON.stringify({
       messages: [
-        {
-          role: 'system',
-          content:
-            'You are a helpful assistant service of helping exchange students from global nation.',
-        }, // 선택적: 시스템 지침
         { role: 'user', content: prompt }, // 사용자 입력
       ],
-      max_tokens_to_sample: 2048, // 응답의 최대 길이 (토큰 수)
+      max_tokens_to_sample: 1024, // 응답의 최대 길이 (토큰 수)
       temperature: 0.7, // 응답의 무작위성 (0~1 범위)
+      anthropic_version: 'bedrock-2023-05-31',
     }),
     contentType: 'application/json',
   };
