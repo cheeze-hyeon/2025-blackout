@@ -62,15 +62,17 @@ export async function requestIcebreaking(team: string) {
 2. A list of friendly and relatable questions or topics that help team members learn more about each other.  
 
 The goal is to make the response fun and approachable while fostering a sense of connection within the team.
-The response should be ko-KR. And just return after "Ask your team members:".
+The response should be ko-KR.
 
 Example team name: ${team}
 
   ================================================================
-  Example format of icebreaking; if the team name is 'Blue Hawks':
+ if the team name is 'Blue Hawks':
 
   Blue Hawks always soar higher! Let’s find out what makes each of us soar!
   Ask your team members:
+  ================================================================
+  Example format of icebreaking; 
   - What’s your dream adventure or "soaring" moment?
   - If you could pick any superpower that represents a hawk’s vision or speed, what would it be and why?
   - What’s the best team experience you’ve ever had and why did it stand out?`;
