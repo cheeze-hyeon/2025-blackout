@@ -15,20 +15,13 @@ const bedrockClient = new BedrockRuntimeClient({ region: 'us-east-1' });
 // AWS Bedrock 함수
 async function callBedrockModel(prompt: string): Promise<string> {
   const modelId = 'anthropic.claude-3-5-sonnet-20240620-v1:0';
-  const payload = {
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: 2048,
-    messages: [
-      {
-        role: 'user',
-        content: [{ type: 'text', text: prompt }],
-      },
-    ],
-  };
-
   const input = {
     modelId,
-    body: JSON.stringify({ payload }),
+    body: JSON.stringify({
+      prompt, // 사용자가 입력한 프롬프트
+      max_tokens_to_sample: 2048, // 응답의 최대 길이 (토큰 수)
+      temperature: 0.7, // 응답의 무작위성 (0~1 범위)
+    }),
     contentType: 'application/json',
   };
 
