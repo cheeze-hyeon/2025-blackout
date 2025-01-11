@@ -81,12 +81,22 @@ export function registerHoneyScore(app: App) {
     try {
       const msg = event as SlackMessageEvent;
 
+      const channelId = msg.channel;
+
+      if (
+        !msg.channel_type ||
+        (msg.channel_type !== 'im' && msg.channel_type !== 'mpim')
+      ) {
+        logger.info(`Message not from a DM or group DM. Ignoring.`);
+        return;
+      }
+
+      logger.info(`Received a DM or group DM in channel: ${channelId}`);
+
       // 봇 메시지(subtype === 'bot_message')는 무시
       if (msg.subtype === 'bot_message') {
         return;
       }
-
-      const channelId = msg.channel;
 
       // 1) 채널 정보 S3에서 읽기
       let channelData = await getChannelData(channelId, logger);
