@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 import { registerReactionAddedEvent } from './translation';
 import { registerWelcomeEvents } from './welcome';
 import { registerAdminEvents } from './admin';
-import { handleNetworkCommand, registerNetworkViewHandler } from './network';
+import { registerNetworkCommands, registerNetworkViewHandler } from './network';
 import express from 'express';
 
 dotenv.config();
@@ -19,7 +19,8 @@ const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET!,
 });
 
-// Express 앱 설정
+const app = express();
+// 슬랙에서 오는 요청은 application/x-www-form-urlencoded 형식입니다
 receiver.router.use(express.urlencoded({ extended: true }));
 receiver.router.use(express.json());
 
@@ -58,14 +59,16 @@ boltApp.action('button_click', async ({ ack, body, client }) => {
   }
 });
 
-registerAdminEvents();
+// 이벤트 핸들러 및 명령어 핸들러 등록
+registerReactionAddedEvent();
 registerWelcomeEvents();
-// registerReactionAddedEvent();
+registerAdminEvents();
+registerNetworkCommands(boltApp);
 registerNetworkViewHandler(boltApp);
 
 // 서버 실행
 (async () => {
-  const port = process.env.PORT || 4000; // 포트 4000으로 변경 (테스트용)
+  const port = process.env.PORT || 3000;
   await boltApp.start(port); // 서버 시작
   console.log(`⚡️ Slack app is running on port ${port}`);
 })();
