@@ -1,6 +1,8 @@
 import { boltApp } from '../index';
 import { Logger, BlockAction, SlashCommand } from '@slack/bolt'; // Command 제거
 import { WebClient } from '@slack/web-api';
+import { uploadToS3 } from '../s3service';
+import fs from 'fs';
 
 // 인메모리 사용자 정보 저장소
 const userInfoStore: Map<string, UserInfo> = new Map();
@@ -149,7 +151,7 @@ const openUserInfoModal = async (client: WebClient, triggerId: string) => {
 /**
  * 신규 사용자에게 웰컴 메시지를 전송하고 정보 입력을 요청하는 이벤트 핸들러를 등록합니다.
  */
-export const registerWelcomeEvents = async() => {
+export const registerWelcomeEvents = async () => {
   // 'team_join' 이벤트 핸들러 등록
   boltApp.event('team_join', async ({ event, client, logger }) => {
     try {
@@ -202,75 +204,90 @@ export const registerWelcomeEvents = async() => {
   });
 
   // 버튼 클릭 액션 핸들러 등록
-  boltApp.action<BlockAction>('welcome_provide_info', async ({ body, ack, client, logger }) => {
-    await ack();
+  boltApp.action<BlockAction>(
+    'welcome_provide_info',
+    async ({ body, ack, client, logger }) => {
+      await ack();
 
-    try {
-      const triggerId = body.trigger_id;
-      const userId = body.user?.id;
+      try {
+        const triggerId = body.trigger_id;
+        const userId = body.user?.id;
 
-      if (!triggerId || !userId) {
-        logger.error('trigger_id 또는 user_id가 존재하지 않습니다.');
-        return;
+        if (!triggerId || !userId) {
+          logger.error('trigger_id 또는 user_id가 존재하지 않습니다.');
+          return;
+        }
+
+        // 모달 뷰 열기
+        await openUserInfoModal(client, triggerId);
+      } catch (error) {
+        logger.error('모달 열기 중 오류 발생:', error);
       }
-
-      // 모달 뷰 열기
-      await openUserInfoModal(client, triggerId);
-    } catch (error) {
-      logger.error('모달 열기 중 오류 발생:', error);
-    }
-  });
+    },
+  );
 
   // 모달 제출 핸들러 등록
-  boltApp.view('welcome_info_modal', async ({ ack, body, view, client, logger }) => {
-    await ack();
+  boltApp.view(
+    'welcome_info_modal',
+    async ({ ack, body, view, client, logger }) => {
+      await ack();
 
-    try {
-      const userId = body.user?.id;
-      if (!userId) {
-        logger.error('사용자 ID가 존재하지 않습니다.');
-        return;
-      }
+      try {
+        const userId = body.user?.id;
+        if (!userId) {
+          logger.error('사용자 ID가 존재하지 않습니다.');
+          return;
+        }
 
-      const values = view.state.values;
+        const values = view.state.values;
 
-      // 입력된 값 추출
-      const name = values.name_block?.name?.value?.trim();
-      const gender = values.gender_block?.gender?.selected_option?.value;
-      const age = values.age_block?.age?.value?.trim();
-      const nationality = values.nationality_block?.nationality?.value?.trim();
-      const almaMater = values.alma_mater_block?.alma_mater?.value?.trim();
+        // 입력된 값 추출
+        const name = values.name_block?.name?.value?.trim();
+        const gender = values.gender_block?.gender?.selected_option?.value;
+        const age = values.age_block?.age?.value?.trim();
+        const nationality =
+          values.nationality_block?.nationality?.value?.trim();
+        const almaMater = values.alma_mater_block?.alma_mater?.value?.trim();
 
-      if (!name || !gender || !age || !nationality || !almaMater) {
-        // 필수 입력값이 누락된 경우
+        if (!name || !gender || !age || !nationality || !almaMater) {
+          // 필수 입력값이 누락된 경우
+          await client.chat.postMessage({
+            channel: userId,
+            text: '모든 필드를 올바르게 입력해 주세요.',
+          });
+          return;
+        }
+
+        // 사용자 정보 저장
+        const userInfo: UserInfo = {
+          name,
+          gender,
+          age,
+          nationality,
+          almaMater,
+        };
+        userInfoStore.set(userId, userInfo);
+
+        const userInfoString = JSON.stringify(userInfo);
+
+        // JSON 문자열을 Buffer로 변환
+        const userInfoBuffer = Buffer.from(userInfoString, 'utf-8');
+
+        // S3 업로드
+        await uploadToS3(userInfoBuffer, `${userId}.json`); // 파일 이름에 확장자 추가
+
+        // 확인 메시지 전송
         await client.chat.postMessage({
           channel: userId,
-          text: '모든 필드를 올바르게 입력해 주세요.',
+          text: '정보가 성공적으로 저장되었습니다! 감사합니다.',
         });
-        return;
+
+        console.log(`사용자 정보 저장됨: ${userId}`, userInfo);
+      } catch (error) {
+        logger.error('모달 제출 처리 중 오류 발생:', error);
       }
-
-      // 사용자 정보 저장
-      const userInfo: UserInfo = {
-        name,
-        gender,
-        age,
-        nationality,
-        almaMater,
-      };
-      userInfoStore.set(userId, userInfo);
-
-      // 확인 메시지 전송
-      await client.chat.postMessage({
-        channel: userId,
-        text: '정보가 성공적으로 저장되었습니다! 감사합니다.',
-      });
-
-      console.log(`사용자 정보 저장됨: ${userId}`, userInfo);
-    } catch (error) {
-      logger.error('모달 제출 처리 중 오류 발생:', error);
-    }
-  });
+    },
+  );
 
   // '/globee_start' 명령어 핸들러 등록
   boltApp.command('/globee_start', async ({ command, ack, client, logger }) => {

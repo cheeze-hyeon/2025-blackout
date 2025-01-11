@@ -10,6 +10,7 @@ import { registerNetworkCommands, registerNetworkViewHandler } from './network';
 import { registerTradeEvents } from './trade';
 import { registerTodayConversationEvents } from './today';
 import { registerHelpCommand } from './help';
+import { registerAdminHelpCommand } from './admin_help';
 import { registerHoneyScore } from './network/honeyscore';
 
 dotenv.config();
@@ -72,6 +73,7 @@ registerTodayConversationEvents();
 registerNetworkCommands(boltApp);
 registerNetworkViewHandler(boltApp);
 registerHelpCommand(boltApp);
+registerAdminHelpCommand(boltApp);
 registerHoneyScore(boltApp);
 
 // 서버 실행
