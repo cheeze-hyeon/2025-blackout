@@ -35,13 +35,14 @@ jobs:
       run: |
         npm install
 
-    - name: Upload SSH private key
+    - name: Restart Server
       uses: appleboy/ssh-action@v0.1.0
       with:
         host: ${{ secrets.EC2_IP }} 
         username: ec2-user            
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
+        options: '-o StrictHostKeyChecking=no'
         script: |
           cd /home/globee
           git pull origin main
