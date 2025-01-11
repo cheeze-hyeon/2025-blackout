@@ -280,13 +280,15 @@ export const registerWelcomeEvents = async () => {
         await client.chat.postMessage({
           channel: userId,
           text: `GloBee🐝 개인 정보가 성공적으로 저장되었습니다!
-      - *이름*: ${name}
-      - *성별*: ${gender}
-      - *나이*: ${age}
-      - *국적*: ${nationality}
-      - *출신 대학*: ${almaMater}`,
+    - *이름*: ${name}
+    - *성별*: ${gender}
+    - *나이*: ${age}
+    - *국적*: ${nationality}
+    - *출신 대학*: ${almaMater}
+    정보가 잘못되었다면, \`/globee_start\` 커맨드를 통해 다시 입력할 수 있습니다.`,
+
         });
-        
+
         console.log(`사용자 정보 저장됨: ${userId}`, userInfo);
       } catch (error) {
         logger.error('모달 제출 처리 중 오류 발생:', error);
