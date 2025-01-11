@@ -1,5 +1,7 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import * as dotenv from 'dotenv';
+import bodyParser from 'body-parser';
+import express from 'express';
 
 dotenv.config();
 
@@ -7,6 +9,11 @@ dotenv.config();
 const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET!,
 });
+
+const app = express();
+// 슬랙에서 오는 요청은 application/x-www-form-urlencoded 형식입니다
+receiver.router.use(express.urlencoded({ extended: true }));
+receiver.router.use(express.json());
 
 // URL 검증 처리 - ExpressReceiver의 Express 앱 사용
 receiver.router.post('/slack/events', (req, res) => {
@@ -20,6 +27,23 @@ receiver.router.post('/slack/events', (req, res) => {
   res.status(200).send(); // 다른 요청에 대해 200 응답
 });
 
+receiver.router.post('/slack/commands', async (req, res) => {
+  console.log('Headers:', req.headers);
+  console.log('Parsed body:', req.body);
+  console.log('Command received:', req.body); // 요청 로그 출력
+  const { command, text, user_id, channel_id } = req.body;
+
+  if (command === '/travel') {
+    const responseMessage = {
+      response_type: 'in_channel',
+      text: `Hello <@${user_id}>! Here's your template:`,
+    };
+    res.json(responseMessage);
+  } else {
+    res.status(200).send('Unknown command');
+  }
+});
+
 // Slack Bolt 앱 초기화
 const boltApp = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -30,7 +54,22 @@ const boltApp = new App({
 // Slack 이벤트 핸들러 등록
 boltApp.event('app_mention', async ({ event, say }) => {
   console.log('Mention event received:', event); // 이벤트 로그 출력
-  await say(`Hello <@${event.user}>!`); // 응답 메시지
+  await say(`반가옹옹옹 <@${event.user}>!`); // 응답 메시지
+});
+
+boltApp.action('button_click', async ({ ack, body, client }) => {
+  await ack(); // 액션을 확인합니다.
+
+  try {
+    // 클릭한 사용자에게 DM 전송
+    await client.chat.postMessage({
+      channel: body.user.id, // 사용자 ID로 메시지 전송
+      text: 'Button clicked! Here is your response.',
+    });
+    console.log('Message sent to user:', body.user.id);
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
 });
 
 // 서버 실행
