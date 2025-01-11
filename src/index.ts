@@ -64,7 +64,7 @@ boltApp.action('button_click', async ({ ack, body, client }) => {
 registerReactionAddedEvent();
 registerWelcomeEvents();
 registerAdminEvents();
-registerTradeEvents();
+registerTradeEvents(boltApp);
 registerNetworkCommands(boltApp);
 registerNetworkViewHandler(boltApp);
 

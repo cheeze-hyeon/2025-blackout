@@ -1,5 +1,4 @@
-import { boltApp } from '../index';
-import { Logger, BlockAction, SlashCommand } from '@slack/bolt'; // Command 제거
+import { App, Logger, BlockAction } from '@slack/bolt'; // Command 제거
 import { WebClient } from '@slack/web-api';
 
 // 인메모리 거래 정보 저장소
@@ -151,9 +150,9 @@ const openTradeInfoModal = async (client: WebClient, triggerId: string) => {
 /**
  * 신규 거래에게 웰컴 메시지를 전송하고 정보 입력을 요청하는 이벤트 핸들러를 등록합니다.
  */
-export const registerTradeEvents = async () => {
+export function registerTradeEvents(app: App) {
   // 버튼 클릭 액션 핸들러 등록
-  boltApp.action<BlockAction>(
+  app.action<BlockAction>(
     'trade_provide_info',
     async ({ body, ack, client, logger }) => {
       await ack();
@@ -176,7 +175,7 @@ export const registerTradeEvents = async () => {
   );
 
   // 모달 제출 핸들러 등록
-  boltApp.view(
+  app.view(
     'trade_info_modal',
     async ({ ack, body, view, client, logger }) => {
       await ack(); // ack()를 즉시 호출
@@ -227,7 +226,7 @@ export const registerTradeEvents = async () => {
   );
 
   // '/trade' 명령어 핸들러 등록
-  boltApp.command('/trade', async ({ command, ack, client, logger }) => {
+  app.command('/trade', async ({ command, ack, client, logger }) => {
     await ack();
 
     try {
