@@ -3,6 +3,7 @@ import { Logger, BlockAction, SlashCommand } from '@slack/bolt'; // Command 제�
 import { WebClient } from '@slack/web-api';
 import { requestConvers } from '../AImodel';
 import { getFromS3 } from '../s3service';
+import axios from 'axios';
 
 export const registerTodayConversationEvents = async () => {
   // '/today' 명령어 핸들러 등록
@@ -19,16 +20,17 @@ export const registerTodayConversationEvents = async () => {
       }
 
       // TO DO: 어드민 워크스페이스 국가 정보 가져오기
-      const dataFromS3 = await getFromS3(userId);
+      const url = `https://blackout-15-globee.s3.us-east-1.amazonaws.com/${userId}.json`;
 
-      // Convert Buffer to JSON string and parse it
-      const userInfo = JSON.parse(dataFromS3.toString('utf-8'));
+      const response = await axios.get(url, {
+        responseType: 'json', // Automatically parses JSON response
+      });
 
-      console.log('userInfo', userInfo);
+      const userInfo = response.data;
 
-      // Retrieve country information
+      console.log('Parsed User Info:', userInfo);
+
       const country = userInfo?.nationality ?? 'america';
-
       console.log('Country:', country);
 
       const todayConversations = await requestConvers(country);
