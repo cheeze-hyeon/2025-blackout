@@ -11,6 +11,119 @@ export async function handleNetworkCommand(req: Request, res: Response) {
   const { trigger_id, channel_id } = req.body;
 
   try {
+    const result = await boltApp.client.conversations.members({
+      channel: channel_id,
+      limit: 1000,
+    });
+    let members = result.members || [];
+
+    // 1) USLACKBOT 제외
+    members = members.filter((m) => m !== 'USLACKBOT');
+
+    // 2) 봇 / 앱 계정 제외
+    const filtered: string[] = [];
+    for (const memberId of members) {
+      const userInfo = await boltApp.client.users.info({ user: memberId });
+      if (!userInfo.user) continue;
+      if (userInfo.user.is_bot) continue;
+      filtered.push(memberId);
+    }
+    members = filtered;
+
+    const memberCount = members.length;
+
+    const blocks: any[] = [
+      {
+        type: 'input',
+        block_id: 'network_name_block',
+        label: {
+          type: 'plain_text',
+          text: '네트워킹 이름',
+        },
+        element: {
+          type: 'plain_text_input',
+          action_id: 'network_name_input',
+          placeholder: {
+            type: 'plain_text',
+            text: '예: 봄맞이 네트워킹',
+          },
+        },
+      },
+      {
+        type: 'input',
+        block_id: 'team_count_block',
+        label: {
+          type: 'plain_text',
+          text: '조 개수',
+        },
+        element: {
+          type: 'number_input',
+          action_id: 'team_count_input',
+          min_value: '1',
+          is_decimal_allowed: false,
+        },
+      },
+      {
+        type: 'input',
+        block_id: 'info_block',
+        label: {
+          type: 'plain_text',
+          text: '추가 안내 (예: 조장 관련, 모임 장소 등)',
+        },
+        element: {
+          type: 'plain_text_input',
+          action_id: 'info_input',
+          multiline: true,
+          placeholder: {
+            type: 'plain_text',
+            text: '예: 각 조에서 가장 앞에 있는 사람이 조장이 됩니다.',
+          },
+        },
+        optional: true,
+      },
+    ];
+
+    if (memberCount <= 100) {
+      // 기본 전원 선택 (include)
+      blocks.push({
+        type: 'input',
+        block_id: 'include_users_block',
+        label: {
+          type: 'plain_text',
+          text: `포함할 인원 (기본적으로 ${memberCount}명 전부 선택됨)`,
+        },
+        element: {
+          type: 'multi_users_select',
+          action_id: 'include_users_select',
+          placeholder: {
+            type: 'plain_text',
+            text: '제외하고 싶은 사람은 선택 해제하세요',
+          },
+          initial_users: members, // 최대 100명
+        },
+        optional: false,
+      });
+    } else {
+      // --- 100명 초과: 기본 전원 제외(아무도 선택 안 됨) ---
+      blocks.push({
+        type: 'input',
+        block_id: 'include_users_block',
+        label: {
+          type: 'plain_text',
+          text: `포함할 인원 (현재 ${memberCount}명, 기본 0명 선택)`,
+        },
+        element: {
+          type: 'multi_users_select',
+          action_id: 'include_users_select',
+          placeholder: {
+            type: 'plain_text',
+            text: '여기서 포함할 사람들을 직접 선택하세요',
+          },
+        },
+        optional: false,
+      });
+    }    
+
     const view: View = {
       type: 'modal',
       callback_id: 'network_modal',
@@ -26,57 +139,12 @@ export async function handleNetworkCommand(req: Request, res: Response) {
         type: 'plain_text',
         text: '취소',
       },
-      private_metadata: channel_id,
-      blocks: [
-        {
-          type: 'input',
-          block_id: 'network_name_block',
-          label: {
-            type: 'plain_text',
-            text: '네트워킹 이름',
-          },
-          element: {
-            type: 'plain_text_input',
-            action_id: 'network_name_input',
-            placeholder: {
-              type: 'plain_text',
-              text: '예: 봄맞이 네트워킹',
-            },
-          },
-        },
-        {
-          type: 'input',
-          block_id: 'team_count_block',
-          label: {
-            type: 'plain_text',
-            text: '조 개수',
-          },
-          element: {
-            type: 'number_input',
-            action_id: 'team_count_input',
-            min_value: '1',
-            is_decimal_allowed: false,
-          },
-        },
-        {
-          type: 'input',
-          block_id: 'info_block',
-          label: {
-            type: 'plain_text',
-            text: '추가 안내 (예: 조장 관련, 모임 장소 등)',
-          },
-          element: {
-            type: 'plain_text_input',
-            action_id: 'info_input',
-            multiline: true,
-            placeholder: {
-              type: 'plain_text',
-              text: '예: 각 조에서 가장 앞에 있는 사람이 조장이 됩니다.',
-            },
-          },
-          optional: true,
-        },
-      ],
+      private_metadata: JSON.stringify({
+        channel_id,
+        memberCount,
+        members,
+      }),
+      blocks,
     };
 
     // 모달 열기
@@ -101,50 +169,33 @@ export function registerNetworkViewHandler(app: App) {
   app.view('network_modal', async ({ ack, body, view, client, logger }) => {
     await ack();
 
-    const user = body.user.id;
-    const channelId = view.private_metadata; // 모달을 연 채널 ID
-    const networkName = view.state.values.network_name_block.network_name_input.value;
+    const meta = JSON.parse(view.private_metadata || '{}');
+    const channelId = meta.channel_id || '';
+    const networkName = view.state.values.network_name_block.network_name_input.value || '';
     const teamCountValue = view.state.values.team_count_block.team_count_input.value ?? '0';
     const teamCount = parseInt(teamCountValue, 10);
     const additionalInfo = view.state.values.info_block.info_input.value ?? '';
 
     try {
+      if (!channelId) throw new Error('채널 ID를 찾을 수 없습니다.');
       // 팀 개수 유효성 검사
       if (teamCount < 1) {
         throw new Error('조 개수는 최소 1 이상이어야 합니다.');
       }
 
-      // 채널 멤버 가져오기
-      const result = await client.conversations.members({
-        channel: channelId,
-        limit: 1000,
-      });
+      const includedUsers =
+        view.state.values.include_users_block.include_users_select.selected_users ?? [];
 
-      let members = result.members || [];
-
-      // 1) USLACKBOT 제외
-      members = members.filter((m) => m !== 'USLACKBOT');
-
-      // 2) 봇 / 앱 계정 제외
-      const filtered: string[] = [];
-      for (const memberId of members) {
-        const userInfo = await client.users.info({ user: memberId });
-        if (!userInfo.user) continue;
-        if (userInfo.user.is_bot) continue;
-        filtered.push(memberId);
-      }
-      members = filtered;
-
-      if (teamCount > members.length) {
-        throw new Error('조 개수가 채널의 사용자 수를 초과할 수 없습니다.');
+      if (includedUsers.length < teamCount) {
+        throw new Error(`선택된 인원(${includedUsers.length})이 조 개수(${teamCount})보다 작습니다.`);
       }
 
       // 사용자 정보 가져오기
       const web = new WebClient(process.env.SLACK_BOT_TOKEN);
       const userProfiles = await Promise.all(
-        members.map(async (member) => {
-          const profile = await web.users.profile.get({ user: member });
-          return { id: member, name: profile.profile?.real_name || member };
+        includedUsers.map(async (userId) => {
+          const profile = await web.users.profile.get({ user: userId });
+          return { id: userId, name: profile.profile?.real_name || userId };
         })
       );
 
