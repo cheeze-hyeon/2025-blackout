@@ -25,9 +25,9 @@ export function registerHelpCommand(app: App) {
 - *\`/trade\`*
     *#물건-팝니다-삽니다* 채널에 새로운 거래를 등록할 수 있습니다.
 
-- *\`/score 네트워킹이름 조번호\`* (예시: \`/score 봄맞이 해커톤 3\`)
-    현재 소속되어있는 네트워킹 조의 *HoneyPot🍯*이 얼마나 차올랐는지 표시합니다.
-    
+- *\`/score 네트워킹이름 조번호\` (예: \`/score 봄맞이 해커톤 3\`)*
+    현재 소속되어있는 네트워킹 조의 *HoneyPot*🍯이 얼마나 차올랐는지 표시합니다.
+
 - *번역*
     번역하고 싶은 문장에 국기(🇺🇸, 🇯🇵)로 감정표현을 표시하면, 번역이 제공됩니다. 
     *If you need \`/help\` by other langauges, please push an emoji(🇺🇸, 🇯🇵) at this comment.*
