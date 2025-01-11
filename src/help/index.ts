@@ -25,9 +25,9 @@ export function registerHelpCommand(app: App) {
 - \`/trade\`
     *#물건-팝니다-삽니다* 채널에 새로운 거래를 등록할 수 있습니다.
 
-- 번역
+- *번역*
     번역하고 싶은 문장에 국기(🇺🇸, 🇯🇵)로 감정표현을 표시하면, 번역이 제공됩니다. 
-    *If you need help by other langauges, please push an emoji(🇺🇸, 🇯🇵) at this comment.*
+    *If you need \`/help\` by other langauges, please push an emoji(🇺🇸, 🇯🇵) at this comment.*
     `;
 
     try {
