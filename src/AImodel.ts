@@ -14,10 +14,7 @@ const bedrockClient = new BedrockRuntimeClient({ region: 'us-east-1' });
 
 // AWS Bedrock 함수
 async function callBedrockModel(prompt: string): Promise<string> {
-  const modelId = 'anthropic.claude-3-5-sonnet-20241022-v2:0';
-  const inferenceProfileArn =
-    'arn:aws:bedrock:us-east-1:730335373015:inference-profile/us.anthropic.claude-3-5-sonnet-20241022-v2:0';
-
+  const modelId = 'anthropic.claude-3-5-sonnet-20240620-v1:0';
   const payload = {
     anthropic_version: 'bedrock-2023-05-31',
     max_tokens: 2048,
@@ -31,7 +28,6 @@ async function callBedrockModel(prompt: string): Promise<string> {
 
   const input = {
     modelId,
-    inferenceProfileArn,
     body: JSON.stringify({ payload }),
     contentType: 'application/json',
   };
