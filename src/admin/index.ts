@@ -4,6 +4,7 @@ import { boltApp } from '../index';
 import { SlashCommand, Logger } from '@slack/bolt';
 import { WebClient } from '@slack/web-api';
 import { isUserAdmin } from '../utils/admin';
+import { uploadToS3 } from '../s3service';
 
 // 인메모리 워크스페이스 정보 저장소
 let workspaceInfo: WorkspaceInfo = {
@@ -106,7 +107,9 @@ export const registerAdminEvents = async () => {
 
     const { trigger_id, user_id, channel_id } = command;
 
-    logger.info(`Received /globee_admin command from user: ${user_id} in channel: ${channel_id}`);
+    logger.info(
+      `Received /globee_admin command from user: ${user_id} in channel: ${channel_id}`,
+    );
 
     try {
       if (!trigger_id || !user_id) {
@@ -135,55 +138,70 @@ export const registerAdminEvents = async () => {
   });
 
   // 워크스페이스 정보 모달 제출 핸들러 등록
-  boltApp.view('workspace_info_modal', async ({ ack, body, view, client, logger }) => {
-    await ack();
+  boltApp.view(
+    'workspace_info_modal',
+    async ({ ack, body, view, client, logger }) => {
+      await ack();
 
-    try {
-      const userId = body.user?.id;
-      if (!userId) {
-        logger.error('사용자 ID가 존재하지 않습니다.');
-        return;
-      }
+      try {
+        const userId = body.user?.id;
+        if (!userId) {
+          logger.error('사용자 ID가 존재하지 않습니다.');
+          return;
+        }
 
-      const values = view.state.values;
+        const values = view.state.values;
 
-      // 입력된 값 추출
-      const country = values.country_block?.country?.value?.trim();
-      const university = values.university_block?.university?.value?.trim();
-      const universitySite = values.university_site_block?.universitySite?.value?.trim();
+        // 입력된 값 추출
+        const country = values.country_block?.country?.value?.trim();
+        const university = values.university_block?.university?.value?.trim();
+        const universitySite =
+          values.university_site_block?.universitySite?.value?.trim();
 
-      if (!country || !university || !universitySite) {
-        // 필수 입력값이 누락된 경우
+        if (!country || !university || !universitySite) {
+          // 필수 입력값이 누락된 경우
+          await client.chat.postEphemeral({
+            channel: userId,
+            user: userId,
+            text: '모든 필드를 올바르게 입력해 주세요.',
+          });
+          return;
+        }
+
+        // 워크스페이스 정보 저장
+        workspaceInfo = {
+          country,
+          university,
+          universitySite, // 추가된 필드 저장
+        };
+
+        // 확인 메시지 전송
         await client.chat.postEphemeral({
           channel: userId,
           user: userId,
-          text: '모든 필드를 올바르게 입력해 주세요.',
-        });
-        return;
-      }
-
-      // 워크스페이스 정보 저장
-      workspaceInfo = {
-        country,
-        university,
-        universitySite, // 추가된 필드 저장
-      };
-
-      // 확인 메시지 전송
-      await client.chat.postEphemeral({
-        channel: userId,
-        user: userId,
-        text: `GloBee🐝 워크스페이스 정보가 성공적으로 저장되었습니다!
+          text: `GloBee🐝 워크스페이스 정보가 성공적으로 저장되었습니다!
       - *국가*: ${country}
       - *대학*: ${university}
       - *대학 웹사이트*: ${universitySite}`,
-      });
+        });
 
-      console.log(`워크스페이스 정보 저장됨:`, workspaceInfo);
-    } catch (error) {
-      logger.error('워크스페이스 정보 제출 처리 중 오류 발생:', error);
-    }
-  });
+        const workspaceInfoString = JSON.stringify(workspaceInfo);
+
+        // JSON 문자열을 Buffer로 변환
+        const workspaceInfoBuffer = Buffer.from(workspaceInfoString, 'utf-8');
+
+        // S3 업로드
+        await uploadToS3(
+          workspaceInfoBuffer,
+          `${process.env.LACK_BOT_TOKEN}.json`,
+        ); // 파일 이름에 확장자 추가
+
+        console.log(`워크스페이스 정보 저장됨:`, workspaceInfo);
+      } catch (error) {
+        logger.error('워크스페이스 정보 제출 처리 중 오류 발생:', error);
+      }
+    },
+  );
 };
 
 /**

@@ -19,26 +19,14 @@ export const registerTodayConversationEvents = async () => {
         return;
       }
 
-      // TO DO: 어드민 워크스페이스 국가 정보 가져오기
-      // const url = `https://blackout-15-globee.s3.us-east-1.amazonaws.com/${userId}.json`;
+      const res = await getFileFromS3(
+        'blackout-15-globee',
+        `${process.env.SLACK_BOT_TOKEN}.json`,
+      );
 
-      // const response = await axios.get(url, {
-      //   responseType: 'json', // Automatically parses JSON response
-      // });
+      const workspaceInfo = JSON.parse(res);
 
-      // const userInfo = response.data;
-
-      // console.log('Parsed User Info:', userInfo);
-
-      // const country = userInfo?.nationality ?? 'america';
-      // console.log('Country:', country);
-
-      const res = await getFileFromS3('blackout-15-globee', `${userId}.json`);
-      console.log('res', res);
-      const userInfo = JSON.parse(res);
-      console.log('userInfo', userInfo);
-      const country = userInfo?.nationality;
-      console.log('Country:', country);
+      const country = workspaceInfo?.country;
 
       const todayConversations = await requestConvers(country);
 
@@ -46,7 +34,7 @@ export const registerTodayConversationEvents = async () => {
 
       await client.chat.postMessage({
         channel: 'C0882E5KPU6',
-        text: `*오늘의 회화(Today's Phrase) 🗣️*\n\n${todayConversations}`,
+        text: `*🗣️ 오늘의 회화(Today's Phrase)*\n\n${todayConversations}`,
       });
     } catch (error) {
       logger.error('오늘의 회화 중 오류 발생:', error);
