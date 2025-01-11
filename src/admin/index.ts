@@ -173,7 +173,10 @@ export const registerAdminEvents = async () => {
       await client.chat.postEphemeral({
         channel: userId,
         user: userId,
-        text: '워크스페이스 정보가 성공적으로 저장되었습니다! 감사합니다.',
+        text: `GloBee🐝 워크스페이스 정보가 성공적으로 저장되었습니다!
+      - *국가*: ${country}
+      - *대학*: ${university}
+      - *대학 웹사이트*: ${universitySite}`,
       });
 
       console.log(`워크스페이스 정보 저장됨:`, workspaceInfo);
