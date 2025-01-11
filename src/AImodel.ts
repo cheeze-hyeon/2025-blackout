@@ -40,18 +40,21 @@ async function callBedrockModel(prompt: string): Promise<string> {
 // Task 수행 함수 생성
 export async function requestTranslation(national: string, text: string) {
   const prompt = `Translate the following text to ${national}: \n ${text}`;
-  const responseText = await callBedrockModel(prompt);
+  const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
+  const responseText = await callBedrockModel(processed_prompt);
   return responseText;
 }
 
 async function requestInformation(hashtag: string, text: string) {
   const prompt = `Find the information that related to keywords;${hashtag}.\n ${text}`;
-  const responseText = await callBedrockModel(prompt);
+  const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
+  const responseText = await callBedrockModel(processed_prompt);
   return responseText;
 }
 
 async function requestHelpService(text: string) {
   const prompt = `You are a pleasant AI assistant. Answer to the given request as much as you can: ${text}`;
-  const responseText = await callBedrockModel(prompt);
+  const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
+  const responseText = await callBedrockModel(processed_prompt);
   return responseText;
 }
