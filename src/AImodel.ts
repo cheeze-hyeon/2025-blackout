@@ -85,10 +85,10 @@ export async function requestConvers(country: string) {
 Format the output in a way that supports Slack's Markdown formatting. Use bold, italics, and proper indentation for readability. Include the following fields:
 
 =================================================
-Country: *${country}*
-Phrase: "*Practical Phrase Here*"
-Meaning and Context: "_Brief Explanation of When and Why to Use This Phrase_"
-Example Usage: \`Example Sentence Showing How This Phrase Would Be Used in a Real-Life Situation\`
+-*Country*: ${country}
+-*Phrase*: "Practical Phrase Here"
+-*Meaning and Context*: _Brief Explanation of When and Why to Use This Phrase_
+*Example Usage*: Example Sentence Showing How This Phrase Would Be Used in a Real-Life Situation.
 
 Make sure the phrases are both useful and culturally relevant, not just simple greetings or overly generic expressions.
 =================================================`;
