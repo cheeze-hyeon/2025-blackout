@@ -39,25 +39,7 @@ export const boltApp = new App({
   receiver, // ExpressReceiver 연결
 });
 
-receiver.router.post('/slack/commands', async (req, res) => {
-  console.log('Headers:', req.headers);
-  console.log('Parsed body:', req.body);
-  console.log('Command received:', req.body); // 요청 로그 출력
-  const { command, text, user_id, channel_id, trigger_id } = req.body;
-
-  if (command === '/travel') {
-    const responseMessage = {
-      response_type: 'in_channel',
-      text: `Hello <@${user_id}>! Here's your template:`,
-    };
-    res.json(responseMessage);
-  } else if (command === '/network') {
-    await handleNetworkCommand(req, res);
-
-  } else {
-    res.status(200).send('Unknown command');
-  }
-});
+// `/slack/commands` 엔드포인트 수동 처리 제거
 
 boltApp.action('button_click', async ({ ack, body, client }) => {
   await ack(); // 액션을 확인합니다.
