@@ -20,6 +20,7 @@ interface ChannelData {
  * S3에서 channelId에 해당하는 ChannelData를 읽어오는 함수
  */
 async function getChannelData(channelId: string, logger: Logger): Promise<ChannelData | null> {
+  logger.info(`[DEBUG] getChannelData: channel=${channelId}`)
   try {
     // 예: S3 버킷명은 'blackout-15-globee'라고 가정
     const bucketName = 'blackout-15-globee';
@@ -44,6 +45,7 @@ async function getChannelData(channelId: string, logger: Logger): Promise<Channe
  * S3에 channelId에 해당하는 ChannelData를 저장(업데이트)하는 함수
  */
 export async function saveChannelData(channelId: string, data: ChannelData, logger: Logger): Promise<void> {
+  logger.info(`[DEBUG] saveChannelData: channel=${channelId}, data=${JSON.stringify(data)}`);
   try {
     const fileKey = `dmChannel-${channelId}.json`;
 
@@ -62,11 +64,14 @@ export async function saveChannelData(channelId: string, data: ChannelData, logg
 export function registerHoneyScore(app: App) {
   // (1) 유저 메시지 감지 → 점수 누적 (봇 메시지 제외)
   app.event('message', async ({ event, logger }) => {
+    logger.info(`[DEBUG] Received message event: `, event);
     try {
       const msg = event as SlackMessageEvent;
 
       // 봇 메시지(subtype === 'bot_message')는 무시
-      if (msg.subtype === 'bot_message') return;
+      if (msg.subtype === 'bot_message') {
+        return;
+      }
 
       const channelId = msg.channel;
 
