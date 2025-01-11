@@ -1,0 +1,38 @@
+name: Deploy to EC2-globee
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: |
+        npm install
+
+    - name: Upload SSH private key
+      uses: appleboy/ssh-action@v0.1.0
+      with:
+        host: ${{ secrets.EC2_IP }} 
+        username: ec2-user            
+        key: ${{ secrets.EC2_SSH_KEY }}  # GitHub Secrets에 SSH Private Key를 저장
+        port: 22
+        script: |
+          cd /home/globee
+          git pull origin main
+          npm install
+          pm2 restart server.js || pm2 start server.js
+          echo "Deployment complete!"
+
