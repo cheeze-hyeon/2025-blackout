@@ -19,8 +19,7 @@ const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET!,
 });
 
-const app = express();
-// 슬랙에서 오는 요청은 application/x-www-form-urlencoded 형식입니다
+// Express 앱 설정
 receiver.router.use(express.urlencoded({ extended: true }));
 receiver.router.use(express.json());
 
@@ -68,7 +67,7 @@ registerNetworkViewHandler(boltApp);
 
 // 서버 실행
 (async () => {
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 4000;
   await boltApp.start(port); // 서버 시작
   console.log(`⚡️ Slack app is running on port ${port}`);
 })();
