@@ -50,6 +50,6 @@ jobs:
           npm install
           npm run build
           cd dist
-          pm2 restart index.js || pm2 start index.js
+          pm2 restart /home/ec2-user/2025-blackout/dist/index.js || pm2 start /home/ec2-user/2025-blackout/dist/index.js
           echo "Deployment complete!"
 
