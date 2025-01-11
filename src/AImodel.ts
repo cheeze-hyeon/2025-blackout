@@ -18,7 +18,14 @@ async function callBedrockModel(prompt: string): Promise<string> {
   const input = {
     modelId,
     body: JSON.stringify({
-      prompt, // 사용자가 입력한 프롬프트
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a helpful assistant service of helping exchange students from global nation.',
+        }, // 선택적: 시스템 지침
+        { role: 'user', content: prompt }, // 사용자 입력
+      ],
       max_tokens_to_sample: 2048, // 응답의 최대 길이 (토큰 수)
       temperature: 0.7, // 응답의 무작위성 (0~1 범위)
     }),
@@ -41,20 +48,20 @@ async function callBedrockModel(prompt: string): Promise<string> {
 export async function requestTranslation(national: string, text: string) {
   const prompt = `Translate the following text to ${national}: \n ${text}`;
   const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
-  const responseText = await callBedrockModel(processed_prompt);
+  const responseText = await callBedrockModel(prompt);
   return responseText;
 }
 
 async function requestInformation(hashtag: string, text: string) {
   const prompt = `Find the information that related to keywords;${hashtag}.\n ${text}`;
   const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
-  const responseText = await callBedrockModel(processed_prompt);
+  const responseText = await callBedrockModel(prompt);
   return responseText;
 }
 
 async function requestHelpService(text: string) {
   const prompt = `You are a pleasant AI assistant. Answer to the given request as much as you can: ${text}`;
   const processed_prompt = `Human: ${prompt} \n\nAssistant:`;
-  const responseText = await callBedrockModel(processed_prompt);
+  const responseText = await callBedrockModel(prompt);
   return responseText;
 }
