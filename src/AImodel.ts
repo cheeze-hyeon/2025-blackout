@@ -56,10 +56,15 @@ export async function requestTranslation(national: string, text: string) {
 
 // Icebreaking 봇봇
 export async function requestIcebreaking(team: string) {
-  const prompt = `Given a team name as input, your task is to create an icebreaking output designed to lighten the atmosphere and foster team bonding. The response should include:
-  1. A fun or encouraging statement related to the team name to set the tone at first sentence.
-  2. A set of questions or topics that help team members learn more about each other in a friendly, engaging way.
-  Given team name: ${team}
+  const prompt = `Given a team name as input, create an icebreaking response designed to lighten the mood and help team members bond. The output should feel natural and casual, like something Korean university students would use in a friendly setting. The tone should be light, fun, and engaging. The response must include:
+
+1. A fun or encouraging statement related to the team name to set the tone in the first sentence.  
+2. A list of friendly and relatable questions or topics that help team members learn more about each other.  
+
+The goal is to make the response fun and approachable while fostering a sense of connection within the team.
+The response should be ko-KR.
+
+Example team name: ${team}
 
   ================================================================
   Example format of icebreaking; if the team name is 'Blue Hawks':
@@ -97,8 +102,42 @@ export async function requestHelpService(text: string) {
   return responseText;
 }
 
-export async function requestInformation(hashtag: string, text: string) {
-  const prompt = `Find the information that related to keywords;${hashtag}.\n${text}`;
+// Information tracking
+export async function requestLinkInfo(
+  keyword: string,
+  data: {
+    link: string;
+    text: string;
+  }[],
+) {
+  const prompt = `Your task is to identify the top 3 most relevant (link, text) pairs based on a provided keyword. Analyze the content of the text in each pair and rank them based on their relevance to the keyword. 
+  Relevance should be determined by:
+  1. How frequently and naturally the keyword or related terms appear in the text.
+  2. How closely the content context aligns with the meaning or purpose implied by the keyword.
+  3. Any direct mentions or discussions that address key aspects of the keyword.
+  Strictly follow the output format and return ONLY the link information, not the text information.
+  
+  ===================================================
+  
+  Input: keyword=${keyword}
+  Pairs: ${data}
+
+  Output Format: 
+  1. "Most Relevant LINK"
+  2. "Second Most Relevant LINK"
+  3. "Third Most Relevant LINK" `;
+
+  const responseText = await callBedrockModel(prompt);
+  return responseText;
+}
+
+export async function requestInformation(text: string) {
+  const prompt = `Your task is to take unstructured text input obtained from crawling various sources and refine it into a well-organized, concise notification that helps users quickly understand the essential points. Summarize the key details in a way that removes unnecessary repetition. Maintain a tone suitable for notifications—short, direct, and informative.
+  ==========================================
+  Input: ${text}
+  Output Format: 
+  Title: "A brief title summarizing the main topic in 1 line here"
+  Contents: "summarized key inforation based in given text"`;
   const responseText = await callBedrockModel(prompt);
   return responseText;
 }

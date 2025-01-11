@@ -8,6 +8,8 @@ import { registerWelcomeEvents } from './welcome';
 import { registerAdminEvents } from './admin';
 import { registerNetworkCommands, registerNetworkViewHandler } from './network';
 import { registerTradeEvents } from './trade';
+import { registerTodayConversationEvents } from './today';
+import { registerHelpCommand } from './help';
 
 dotenv.config();
 
@@ -65,8 +67,10 @@ registerReactionAddedEvent();
 registerWelcomeEvents();
 registerAdminEvents();
 registerTradeEvents(boltApp);
+registerTodayConversationEvents();
 registerNetworkCommands(boltApp);
 registerNetworkViewHandler(boltApp);
+registerHelpCommand(boltApp);
 
 // 서버 실행
 (async () => {
