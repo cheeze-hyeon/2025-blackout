@@ -63,14 +63,12 @@ async function uploadToS3(fileBuffer: Buffer, fileName: string) {
 // }
 
 async function getFileFromS3(bucket: string, key: string): Promise<string> {
-  const client = new S3Client({});
-
   const command = new GetObjectCommand({
     Bucket: bucket,
     Key: key,
   });
 
-  const response = await client.send(command);
+  const response = await s3Client.send(command);
   // Stream을 문자열로 변환
   const str = await response.Body?.transformToString();
   return str || '';
