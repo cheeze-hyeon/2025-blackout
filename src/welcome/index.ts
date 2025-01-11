@@ -149,7 +149,7 @@ const openUserInfoModal = async (client: WebClient, triggerId: string) => {
 /**
  * 신규 사용자에게 웰컴 메시지를 전송하고 정보 입력을 요청하는 이벤트 핸들러를 등록합니다.
  */
-export const registerWelcomeEvents = () => {
+export const registerWelcomeEvents = async() => {
   // 'team_join' 이벤트 핸들러 등록
   boltApp.event('team_join', async ({ event, client, logger }) => {
     try {
