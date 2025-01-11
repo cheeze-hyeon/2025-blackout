@@ -1,6 +1,8 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import * as dotenv from 'dotenv';
 import { registerReactionAddedEvent } from './translation';
+import { registerWelcomeEvents } from './welcome';
+import { registerAdminEvents } from './admin';
 import { handleNetworkCommand, registerNetworkViewHandler } from './network';
 import bodyParser from 'body-parser';
 import express from 'express';
@@ -73,7 +75,8 @@ boltApp.action('button_click', async ({ ack, body, client }) => {
 });
 
 registerReactionAddedEvent();
-
+registerWelcomeEvents();
+registerAdminEvents();
 registerNetworkViewHandler(boltApp);
 
 // 서버 실행
