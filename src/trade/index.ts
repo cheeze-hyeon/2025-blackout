@@ -179,18 +179,16 @@ export const registerTradeEvents = async () => {
   boltApp.view(
     'trade_info_modal',
     async ({ ack, body, view, client, logger }) => {
-      await ack();
-
+      await ack(); // ack()를 즉시 호출
       try {
+        // 이후 작업 수행
         const userId = body.user?.id;
         if (!userId) {
           logger.error('사용자 ID가 존재하지 않습니다.');
           return;
         }
-
         const values = view.state.values;
-
-        // 입력된 값 추출
+  
         const name = values.name_block?.name?.value?.trim();
         const condition =
           values.condition_block?.condition?.selected_option?.value;
@@ -198,24 +196,15 @@ export const registerTradeEvents = async () => {
         const place = values.place_block?.place?.value?.trim();
         const description =
           values.description_block?.description?.value?.trim() ?? '';
-
-        console.log('거래 정보:', {
-          name,
-          condition,
-          price,
-          place,
-          description,
-        });
+  
         if (!name || !condition || !price || !place) {
-          // 필수 입력값이 누락된 경우
           await client.chat.postMessage({
             channel: userId,
             text: '모든 필드를 올바르게 입력해 주세요.',
           });
           return;
         }
-
-        // 사용자 정보 저장
+  
         const tradeInfo: TradeInfo = {
           name,
           condition,
@@ -223,19 +212,18 @@ export const registerTradeEvents = async () => {
           place,
           description,
         };
+  
         tradeInfoStore.set(userId, tradeInfo);
-
-        // 확인 메시지 전송
+  
         await client.chat.postMessage({
           channel: userId,
           text: '거래 정보가 성공적으로 저장되었습니다! 감사합니다.',
         });
-
         console.log(`거래 정보 저장됨: ${userId}`, tradeInfo);
       } catch (error) {
         logger.error('모달 제출 처리 중 오류 발생:', error);
       }
-    },
+    }
   );
 
   // '/trade' 명령어 핸들러 등록
