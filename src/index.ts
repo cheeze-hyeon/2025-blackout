@@ -1,5 +1,6 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import * as dotenv from 'dotenv';
+import { registerReactionAddedEvent } from './translation';
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ receiver.router.post('/slack/events', (req, res) => {
 });
 
 // Slack Bolt 앱 초기화
-const boltApp = new App({
+export const boltApp = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   receiver, // ExpressReceiver 연결
@@ -33,7 +34,8 @@ boltApp.event('app_mention', async ({ event, say }) => {
   await say(`Hello <@${event.user}>!`); // 응답 메시지
 });
 
-// 서버 실행
+registerReactionAddedEvent();
+//서버 실행
 (async () => {
   const port = process.env.PORT || 3000;
   await boltApp.start(port); // 서버 시작
