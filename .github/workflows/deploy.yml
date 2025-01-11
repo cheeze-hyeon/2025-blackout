@@ -44,6 +44,7 @@ jobs:
         port: 22
         options: '-o StrictHostKeyChecking=no'
         script: |
+          pwd
           cd /home/2025-blackout
           git pull origin main
           npm install
