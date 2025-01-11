@@ -112,12 +112,12 @@ export async function requestLinkInfo(
     text: string;
   }[],
 ) {
-  const prompt = `Your task is to identify the top 3 most relevant (link, text) pairs based on a provided keyword. Analyze the content of the text in each pair and rank them based on their relevance to the keyword. 
+  const prompt = `Your task is to identify more relevant (link, text) pair based on a provided keyword. Analyze the content of the text in each pair and select one of them based on their relevance to the keyword. 
   Relevance should be determined by:
   1. How frequently and naturally the keyword or related terms appear in the text.
   2. How closely the content context aligns with the meaning or purpose implied by the keyword.
   3. Any direct mentions or discussions that address key aspects of the keyword.
-  Strictly follow the output format and return ONLY the link information, not the text information.
+  Return ONLY the link information, not the text information.
   
   ===================================================
   
@@ -125,9 +125,7 @@ export async function requestLinkInfo(
   Pairs: ${data}
 
   Output Format: 
-  1. "Most Relevant LINK"
-  2. "Second Most Relevant LINK"
-  3. "Third Most Relevant LINK" `;
+  More relevant Link: "Most Relevant Link here" `;
 
   const responseText = await callBedrockModel(prompt);
   return responseText;
