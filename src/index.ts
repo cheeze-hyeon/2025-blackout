@@ -53,7 +53,10 @@ receiver.router.post('/slack/commands', async (req, res) => {
     res.json(responseMessage);
   } else if (command === '/network') {
     await handleNetworkCommand(req, res);
-
+  } else if (command === '/globee_admin') {
+    await registerAdminEvents();
+  } else if (command === '/globee_start') {
+    await registerWelcomeEvents();
   } else {
     res.status(200).send('Unknown command');
   }

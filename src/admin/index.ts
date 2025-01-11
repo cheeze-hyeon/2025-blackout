@@ -78,7 +78,7 @@ const openWorkspaceInfoModal = async (client: WebClient, triggerId: string) => {
 /**
  * 관리자 전용 이벤트 핸들러를 등록합니다.
  */
-export const registerAdminEvents = () => {
+export const registerAdminEvents = async() => {
   // '/globee_admin' 명령어 핸들러 등록
   boltApp.command('/globee_admin', async ({ command, ack, client, logger }) => {
     await ack();
