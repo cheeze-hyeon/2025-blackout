@@ -5,6 +5,8 @@ import {
   getNextPageLinkByClickButton,
 } from './utils';
 
+import { requestLinkInfo } from '../AImodel';
+
 export const getNextUrlToBegin = async (entryUrl: string) => {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
@@ -69,4 +71,15 @@ const crawlSite = async (url: string, recursive: boolean = true) => {
 
 // 시작 URL을 입력
 // crawlSite('https://www.snu.ac.kr/');
-getNextUrlToBegin('https://oia.snu.ac.kr/visit-oia');
+export const useUpdateCrawlingLink = async (
+  keyword: string,
+  entryUrl: string,
+) => {
+  const nextAndPrevUrlData = await getNextUrlToBegin(entryUrl);
+  if (!nextAndPrevUrlData) {
+    return entryUrl;
+  }
+  const result = await requestLinkInfo(keyword, nextAndPrevUrlData);
+
+  return result;
+};

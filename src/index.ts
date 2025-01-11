@@ -12,6 +12,7 @@ import { registerTodayConversationEvents } from './today';
 import { registerHelpCommand } from './help';
 import { registerAdminHelpCommand } from './admin_help';
 import { registerHoneyScore } from './network/honeyscore';
+import { useUpdateCrawlingLink } from './crawling';
 
 dotenv.config();
 
@@ -75,7 +76,13 @@ registerNetworkViewHandler(boltApp);
 registerHelpCommand(boltApp);
 registerAdminHelpCommand(boltApp);
 registerHoneyScore(boltApp);
-
+setInterval(async () => {
+  const result = await useUpdateCrawlingLink(
+    'computer',
+    'https://www.snu.ac.kr/',
+  );
+  console.log(result);
+}, 10000);
 // 서버 실행
 (async () => {
   const port = process.env.PORT || 3000;
