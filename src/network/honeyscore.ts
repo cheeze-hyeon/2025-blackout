@@ -19,8 +19,11 @@ interface ChannelData {
 /**
  * S3에서 channelId에 해당하는 ChannelData를 읽어오는 함수
  */
-async function getChannelData(channelId: string, logger: Logger): Promise<ChannelData | null> {
-  logger.info(`[DEBUG] getChannelData: channel=${channelId}`)
+async function getChannelData(
+  channelId: string,
+  logger: Logger,
+): Promise<ChannelData | null> {
+  logger.info(`[DEBUG] getChannelData: channel=${channelId}`);
   try {
     // 예: S3 버킷명은 'blackout-15-globee'라고 가정
     const bucketName = 'blackout-15-globee';
@@ -30,7 +33,9 @@ async function getChannelData(channelId: string, logger: Logger): Promise<Channe
     const fileString = await getFileFromS3(bucketName, fileKey);
     if (!fileString) {
       // S3에서 해당 파일이 없으면 null
-      logger.debug(`[DEBUG] getChannelData: No file found for channel=${channelId}`);
+      logger.debug(
+        `[DEBUG] getChannelData: No file found for channel=${channelId}`,
+      );
       return null;
     }
     const data = JSON.parse(fileString) as ChannelData;
@@ -44,8 +49,16 @@ async function getChannelData(channelId: string, logger: Logger): Promise<Channe
 /**
  * S3에 channelId에 해당하는 ChannelData를 저장(업데이트)하는 함수
  */
-export async function saveChannelData(channelId: string, data: ChannelData, logger: Logger): Promise<void> {
-  logger.info(`[DEBUG] saveChannelData: channel=${channelId}, data=${JSON.stringify(data)}`);
+export async function saveChannelData(
+  channelId: string,
+  data: ChannelData,
+  logger: Logger,
+): Promise<void> {
+  logger.info(
+    `[DEBUG] saveChannelData: channel=${channelId}, data=${JSON.stringify(
+      data,
+    )}`,
+  );
   try {
     const fileKey = `dmChannel-${channelId}.json`;
 
@@ -77,6 +90,7 @@ export function registerHoneyScore(app: App) {
 
       // 1) 채널 정보 S3에서 읽기
       let channelData = await getChannelData(channelId, logger);
+      console.log('channelData:', channelData);
 
       // 2) 만약 기존 파일이 없다면(=null) → 이 채널은 네트워킹 DM이 아닐 수 있으므로 그냥 무시
       if (!channelData) {
@@ -85,10 +99,12 @@ export function registerHoneyScore(app: App) {
 
       // 3) score + 1 후 S3에 저장
       channelData.score = (channelData.score || 0) + 1;
+      console.log('updated SCore', channelData.score);
       await saveChannelData(channelId, channelData, logger);
+      console.log('channelData:', channelData);
 
       logger.info(
-        `Channel ${channelId} message count updated = ${channelData.score}`
+        `Channel ${channelId} message count updated = ${channelData.score}`,
       );
     } catch (error) {
       console.error('Error counting message:', error);
@@ -123,7 +139,7 @@ export function registerHoneyScore(app: App) {
       const enteredTeamNumber = parseInt(teamNumberStr, 10);
 
       logger.debug(
-        `[DEBUG] teamNumberStr = "${teamNumberStr}", parsed => ${enteredTeamNumber}`
+        `[DEBUG] teamNumberStr = "${teamNumberStr}", parsed => ${enteredTeamNumber}`,
       );
 
       // 파싱 실패 시
@@ -159,20 +175,27 @@ export function registerHoneyScore(app: App) {
 
       // 실제 DM채널에 매핑된 정보
       const { networkName, teamNumber, score } = channelData;
-      logger.debug(`[DEBUG] Actual (networkName, teamNumber) => ("${networkName}", ${teamNumber})`);
+      logger.debug(
+        `[DEBUG] Actual (networkName, teamNumber) => ("${networkName}", ${teamNumber})`,
+      );
 
       // (네트워킹 이름, 조번호)가 일치?
-      if (networkName === enteredNetworkName && teamNumber === enteredTeamNumber) {
+      if (
+        networkName === enteredNetworkName &&
+        teamNumber === enteredTeamNumber
+      ) {
         logger.debug('[DEBUG] => networkName/teamNumber matches user input!');
         // 채널 점수 안내
         await client.chat.postMessage({
           channel: channelId,
-          text: `${networkName} ${teamNumber}조의 Honey Score는 ${score ?? 0}점입니다!`,
+          text: `${networkName} ${teamNumber}조의 Honey Score는 ${
+            score ?? 0
+          }점입니다!`,
         });
       } else {
         logger.debug(
           '[DEBUG] => Mismatch: ' +
-            `("${networkName}" vs "${enteredNetworkName}") / (${teamNumber} vs ${enteredTeamNumber})`
+            `("${networkName}" vs "${enteredNetworkName}") / (${teamNumber} vs ${enteredTeamNumber})`,
         );
         await client.chat.postMessage({
           channel: channelId,
