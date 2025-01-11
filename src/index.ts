@@ -1,6 +1,10 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import * as dotenv from 'dotenv';
 import { registerReactionAddedEvent } from './translation';
+import { handleNetworkCommand, registerNetworkViewHandler } from './network';
+import bodyParser from 'body-parser';
+import express from 'express';
+import { WebClient, View } from '@slack/web-api';
 
 dotenv.config();
 
@@ -8,6 +12,11 @@ dotenv.config();
 const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET!,
 });
+
+const app = express();
+// 슬랙에서 오는 요청은 application/x-www-form-urlencoded 형식입니다
+receiver.router.use(express.urlencoded({ extended: true }));
+receiver.router.use(express.json());
 
 // URL 검증 처리 - ExpressReceiver의 Express 앱 사용
 receiver.router.post('/slack/events', (req, res) => {
@@ -28,14 +37,46 @@ export const boltApp = new App({
   receiver, // ExpressReceiver 연결
 });
 
-// Slack 이벤트 핸들러 등록
-boltApp.event('app_mention', async ({ event, say }) => {
-  console.log('Mention event received:', event); // 이벤트 로그 출력
-  await say(`Hello <@${event.user}>!`); // 응답 메시지
+receiver.router.post('/slack/commands', async (req, res) => {
+  console.log('Headers:', req.headers);
+  console.log('Parsed body:', req.body);
+  console.log('Command received:', req.body); // 요청 로그 출력
+  const { command, text, user_id, channel_id, trigger_id } = req.body;
+
+  if (command === '/travel') {
+    const responseMessage = {
+      response_type: 'in_channel',
+      text: `Hello <@${user_id}>! Here's your template:`,
+    };
+    res.json(responseMessage);
+  } else if (command === '/network') {
+    await handleNetworkCommand(req, res);
+
+  } else {
+    res.status(200).send('Unknown command');
+  }
+});
+
+boltApp.action('button_click', async ({ ack, body, client }) => {
+  await ack(); // 액션을 확인합니다.
+
+  try {
+    // 클릭한 사용자에게 DM 전송
+    await client.chat.postMessage({
+      channel: body.user.id, // 사용자 ID로 메시지 전송
+      text: 'Button clicked! Here is your response.',
+    });
+    console.log('Message sent to user:', body.user.id);
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
 });
 
 registerReactionAddedEvent();
-//서버 실행
+
+registerNetworkViewHandler(boltApp);
+
+// 서버 실행
 (async () => {
   const port = process.env.PORT || 3000;
   await boltApp.start(port); // 서버 시작
