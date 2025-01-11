@@ -24,7 +24,7 @@ const openTradeInfoModal = async (client: WebClient, triggerId: string) => {
     trigger_id: triggerId,
     view: {
       type: 'modal',
-      callback_id: 'welcome_info_modal',
+      callback_id: 'trade',
       title: {
         type: 'plain_text',
         text: '물건 나눔 & 거래',
@@ -136,11 +136,13 @@ const openTradeInfoModal = async (client: WebClient, triggerId: string) => {
               text: '추가 설명을 입력하세요',
             },
           },
+          optional: true,
           label: {
             type: 'plain_text',
-            text: '추가 설명을',
+            text: '추가 설명',
           },
         },
+        // TO DO: 이미지 연결
       ],
     },
   });
@@ -150,60 +152,9 @@ const openTradeInfoModal = async (client: WebClient, triggerId: string) => {
  * 신규 거래에게 웰컴 메시지를 전송하고 정보 입력을 요청하는 이벤트 핸들러를 등록합니다.
  */
 export const registerTradeEvents = async () => {
-  // 'team_join' 이벤트 핸들러 등록
-  // boltApp.event('team_join', async ({ event, client, logger }) => {
-  //   try {
-  //     const userId = event.user?.id;
-  //     if (!userId) {
-  //       logger.error('User ID가 존재하지 않습니다.');
-  //       return;
-  //     }
-
-  //     // 사용자와의 DM 채널 열기
-  //     const im = await client.conversations.open({ users: userId });
-  //     const channel = im.channel?.id;
-
-  //     if (!channel) {
-  //       logger.error(`사용자 ${userId}와의 DM 채널을 열 수 없습니다.`);
-  //       return;
-  //     }
-
-  //     // 웰컴 메시지 전송
-  //     await client.chat.postMessage({
-  //       channel: channel,
-  //       text: 'Welcome to Globee!',
-  //       blocks: [
-  //         {
-  //           type: 'section',
-  //           text: {
-  //             type: 'mrkdwn',
-  //             text: `안녕하세요 <@${userId}>님, 당신의 교환학생 생활을 더욱 풍요롭게 만드는 GloBee🐝에 오신 것을 환영합니다! 아래 버튼을 눌러 당신에 대한 정보를 알려주세요!`,
-  //           },
-  //         },
-  //         {
-  //           type: 'actions',
-  //           elements: [
-  //             {
-  //               type: 'button',
-  //               text: {
-  //                 type: 'plain_text',
-  //                 text: '정보 입력하기',
-  //               },
-  //               action_id: 'welcome_provide_info',
-  //               style: 'primary',
-  //             },
-  //           ],
-  //         },
-  //       ],
-  //     });
-  //   } catch (error) {
-  //     logger.error('웰컴 메시지 전송 중 오류 발생:', error);
-  //   }
-  // });
-
   // 버튼 클릭 액션 핸들러 등록
   boltApp.action<BlockAction>(
-    'welcome_provide_info',
+    'trade_provide_info',
     async ({ body, ack, client, logger }) => {
       await ack();
 
@@ -226,7 +177,7 @@ export const registerTradeEvents = async () => {
 
   // 모달 제출 핸들러 등록
   boltApp.view(
-    'welcome_info_modal',
+    'trade_info_modal',
     async ({ ack, body, view, client, logger }) => {
       await ack();
 
@@ -248,6 +199,13 @@ export const registerTradeEvents = async () => {
         const description =
           values.description_block?.description?.value?.trim();
 
+        console.log('거래 정보:', {
+          name,
+          condition,
+          price,
+          place,
+          description,
+        });
         if (!name || !condition || !price || !place || !description) {
           // 필수 입력값이 누락된 경우
           await client.chat.postMessage({
