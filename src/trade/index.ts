@@ -197,7 +197,7 @@ export const registerTradeEvents = async () => {
         const price = values.price_block?.price?.value?.trim();
         const place = values.place_block?.place?.value?.trim();
         const description =
-          values.description_block?.description?.value?.trim();
+          values.description_block?.description?.value?.trim() ?? '';
 
         console.log('거래 정보:', {
           name,
@@ -206,7 +206,7 @@ export const registerTradeEvents = async () => {
           place,
           description,
         });
-        if (!name || !condition || !price || !place || !description) {
+        if (!name || !condition || !price || !place) {
           // 필수 입력값이 누락된 경우
           await client.chat.postMessage({
             channel: userId,
