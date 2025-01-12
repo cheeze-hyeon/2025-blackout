@@ -3,6 +3,7 @@ import { WebClient, View } from '@slack/web-api';
 import { isUserAdmin } from '../utils/admin';
 import { requestIcebreaking } from '../AImodel';
 import { saveChannelData } from './honeyscore';
+import { getNetworkNames, saveNetworkNames } from '../utils/networkNames'
 
 // 인메모리 워크스페이스 정보 저장소 (중복 제거: admin/index.ts과 별개로 관리됨)
 let workspaceInfo: WorkspaceInfo = {
@@ -226,6 +227,21 @@ export function registerNetworkViewHandler(app: App) {
       if (teamCount < 1) {
         throw new Error('조 개수는 최소 1 이상이어야 합니다.');
       }
+
+      const existingNames = await getNetworkNames();
+      logger.info(`existingNames => ${JSON.stringify(existingNames)}`);
+
+      if (existingNames.includes(networkName)) {
+        await client.chat.postEphemeral({
+          channel: channelId,
+          user: body.user.id,
+          text: `\`${networkName}\` 네트워킹은 이미 존재합니다. 다른 이름을 사용해 주세요.`,
+        });
+        return;
+      }
+
+      existingNames.push(networkName);
+      await saveNetworkNames(existingNames);
 
       const includedUsers =
         view.state.values.include_users_block.include_users_select
