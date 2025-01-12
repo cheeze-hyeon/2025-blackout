@@ -1,5 +1,6 @@
 import { App, Logger, BlockAction } from '@slack/bolt'; // Command 제거
 import { WebClient } from '@slack/web-api';
+import { isTradeAcceptRequestReaction } from './util';
 
 // 인메모리 거래 정보 저장소
 const tradeInfoStore: Map<string, TradeInfo> = new Map();
@@ -277,6 +278,69 @@ export function registerTradeEvents(app: App) {
     }
   });
 
+  app.event('reaction_added', async ({ event, client, say, body }) => {
+    const { user, reaction, item, item_user } = event;
+    if (item.type !== 'message') return;
+
+    const isTradeAcceptReaction = isTradeAcceptRequestReaction(reaction);
+    if (!isTradeAcceptReaction) return;
+
+    const { channel, ts } = item;
+
+    // conversations.history API를 통해 해당 메시지의 내용 가져오기
+    const history = await client.conversations.history({
+      channel,
+      latest: ts, // 이모지가 추가된 메시지의 타임스탬프
+      limit: 1, // 한 개의 메시지만 조회
+      inclusive: true, // 정확히 해당 메시지를 포함하도록
+    });
+
+    const authorId = history.messages && history.messages[0].user; // 작성자 ID
+    const targetText = history.messages && history.messages[0].text;
+
+    console.log('targetText:', targetText);
+
+    if (!targetText || !authorId) {
+      makeTradeRequestFailMessage({
+        channel,
+        client,
+        user,
+      });
+      return;
+    }
+
+    try {
+      // 작성자와 현재 사용자 간의 DM 채널 생성
+      const dmResponse = await client.conversations.open({
+        users: `${authorId},${user}`, // DM을 생성할 사용자 ID들
+      });
+
+      if (dmResponse.ok && dmResponse.channel?.id) {
+        const dmChannelId = dmResponse.channel.id; // 생성된 DM 채널 ID
+        console.log(`DM channel created: ${dmChannelId}`);
+
+        // 생성된 DM 채널에 거래 관련 메시지 보내기
+        const tradeMessage = `
+      안녕하세요! 🛒
+      아래의 메시지에 대해 거래를 요청하셨습니다:
+      > "${targetText}"
+
+      이 채널에서 거래를 진행해주세요.  
+      안전한 거래를 위해 필요한 추가 정보를 서로 확인하시고 협의하세요. 😊
+    `;
+
+        await client.chat.postMessage({
+          channel: dmChannelId,
+          text: tradeMessage.trim(),
+        });
+      } else {
+        console.error('Failed to create DM channel:', dmResponse);
+      }
+    } catch (error) {
+      console.error('Error creating DM channel:', error);
+    }
+  });
+
   // '/trade' 명령어 핸들러 등록
   app.command('/trade', async ({ command, ack, client, logger }) => {
     await ack();
@@ -305,4 +369,21 @@ export function registerTradeEvents(app: App) {
  */
 export const getTradeInfo = (userId: string): TradeInfo | undefined => {
   return tradeInfoStore.get(userId);
+};
+
+export const makeTradeRequestFailMessage = async ({
+  client,
+  channel,
+  user,
+}: {
+  client: WebClient;
+  channel: string;
+  user: string;
+}) => {
+  const failMessage = await client.chat.postEphemeral({
+    channel,
+    user,
+    text: '거랙 신청에 실패하였습니다.',
+  });
+  return failMessage;
 };

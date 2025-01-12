@@ -198,7 +198,7 @@ export function registerHoneyScore(app: App) {
         // 채널 점수 안내
         await client.chat.postMessage({
           channel: channelId,
-          text: `${networkName} ${teamNumber}조의 Honey Score는 ${
+          text: `${networkName} ${teamNumber}조의 🍯Honey Score는 ${
             score ?? 0
           }점입니다!`,
         });
