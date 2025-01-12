@@ -14,6 +14,7 @@ interface UserInfo {
   age: string;
   nationality: string;
   almaMater: string;
+  keyword: string;
 }
 
 /**
@@ -143,6 +144,22 @@ const openUserInfoModal = async (client: WebClient, triggerId: string) => {
             text: '출신 학교',
           },
         },
+        {
+          type: 'input',
+          block_id: 'keyword_block',
+          element: {
+            type: 'plain_text_input',
+            action_id: 'keyword',
+            placeholder: {
+              type: 'plain_text',
+              text: '관심 키워드를 입력하세요.',
+            },
+          },
+          label: {
+            type: 'plain_text',
+            text: '관심 키워드(학교 사이트에 해당 정보 게시 시 디엠 전달)',
+          },
+        },
       ],
     },
   });
@@ -248,8 +265,9 @@ export const registerWelcomeEvents = async () => {
         const nationality =
           values.nationality_block?.nationality?.value?.trim();
         const almaMater = values.alma_mater_block?.alma_mater?.value?.trim();
+        const keyword = values.keyword_block?.keyword?.value?.trim();
 
-        if (!name || !gender || !age || !nationality || !almaMater) {
+        if (!name || !gender || !age || !nationality || !almaMater || !keyword) {
           // 필수 입력값이 누락된 경우
           await client.chat.postMessage({
             channel: userId,
@@ -265,6 +283,7 @@ export const registerWelcomeEvents = async () => {
           age,
           nationality,
           almaMater,
+          keyword,
         };
         userInfoStore.set(userId, userInfo);
 
@@ -285,6 +304,7 @@ export const registerWelcomeEvents = async () => {
     - *나이*: ${age}
     - *국적*: ${nationality}
     - *출신 대학*: ${almaMater}
+    - *관심 키워드*: ${keyword}
     정보가 잘못되었다면, \`/globee_start\` 커맨드를 통해 다시 입력할 수 있습니다.`,
 
         });
