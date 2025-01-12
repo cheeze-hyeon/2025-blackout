@@ -7,6 +7,7 @@ export const registerReactionAddedEvent = () => {
   boltApp.event('reaction_added', async ({ event, client, say, body }) => {
     const { user, reaction, item, item_user } = event;
     if (item.type !== 'message') return;
+
     const isTranslationReaction = isTranslateRequestReaction(reaction);
     if (!isTranslationReaction) return;
 
@@ -20,6 +21,7 @@ export const registerReactionAddedEvent = () => {
       inclusive: true, // 정확히 해당 메시지를 포함하도록
     });
     const targetText = history.messages && history.messages[0].text;
+
     if (!targetText) {
       makeTranslationFailMessage({
         channel,
@@ -33,6 +35,7 @@ export const registerReactionAddedEvent = () => {
       text: targetText,
       language: reaction,
     });
+
     if (!translateResult) {
       makeTranslationFailMessage({
         channel,

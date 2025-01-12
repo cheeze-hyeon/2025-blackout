@@ -284,101 +284,101 @@ export function registerTradeEvents(app: App) {
     }
   });
 
-  app.event('reaction_added', async ({ event, client, say, body, logger }) => {
-    logger.info('Reaction added event received:', event);
+  // app.event('reaction_added', async ({ event, client, say, body, logger }) => {
+  //   logger.info('Reaction added event received:', event);
 
-    const { user, reaction, item, item_user } = event;
+  //   const { user, reaction, item, item_user } = event;
 
-    // Step 1: Item type 확인
-    if (item.type !== 'message') {
-      logger.warn(`Reaction added to unsupported item type: ${item.type}`);
-      return;
-    }
+  //   // Step 1: Item type 확인
+  //   if (item.type !== 'message') {
+  //     logger.warn(`Reaction added to unsupported item type: ${item.type}`);
+  //     return;
+  //   }
 
-    logger.info(
-      `Reaction added: ${reaction}, by user: ${user}, on message: ${item.ts}`,
-    );
+  //   logger.info(
+  //     `Reaction added: ${reaction}, by user: ${user}, on message: ${item.ts}`,
+  //   );
 
-    // Step 2: Reaction 필터링
-    const isTradeAcceptReaction = isTradeAcceptRequestReaction(reaction);
-    if (!isTradeAcceptReaction) {
-      logger.info(
-        `Reaction "${reaction}" is not a trade accept reaction. Ignoring.`,
-      );
-      return;
-    }
+  //   // Step 2: Reaction 필터링
+  //   const isTradeAcceptReaction = isTradeAcceptRequestReaction(reaction);
+  //   if (!isTradeAcceptReaction) {
+  //     logger.info(
+  //       `Reaction "${reaction}" is not a trade accept reaction. Ignoring.`,
+  //     );
+  //     return;
+  //   }
 
-    const { channel, ts } = item;
+  //   const { channel, ts } = item;
 
-    // Step 3: Message history 가져오기
-    try {
-      logger.info(
-        `Fetching message history for channel: ${channel}, ts: ${ts}`,
-      );
-      const history = await client.conversations.history({
-        channel,
-        latest: ts,
-        limit: 1,
-        inclusive: true,
-      });
+  //   // Step 3: Message history 가져오기
+  //   try {
+  //     logger.info(
+  //       `Fetching message history for channel: ${channel}, ts: ${ts}`,
+  //     );
+  //     const history = await client.conversations.history({
+  //       channel,
+  //       latest: ts,
+  //       limit: 1,
+  //       inclusive: true,
+  //     });
 
-      logger.debug('Message history retrieved:', history);
+  //     logger.debug('Message history retrieved:', history);
 
-      const authorId = history.messages && history.messages[0]?.user; // 작성자 ID
-      const targetText = history.messages && history.messages[0]?.text;
+  //     const authorId = history.messages && history.messages[0]?.user; // 작성자 ID
+  //     const targetText = history.messages && history.messages[0]?.text;
 
-      logger.info(`Message author ID: ${authorId}`);
-      logger.info(`Target message text: "${targetText}"`);
+  //     logger.info(`Message author ID: ${authorId}`);
+  //     logger.info(`Target message text: "${targetText}"`);
 
-      if (!targetText || !authorId) {
-        logger.error(
-          'Message text or author ID is missing. Sending failure message.',
-        );
-        makeTradeRequestFailMessage({
-          channel,
-          client,
-          user,
-        });
-        return;
-      }
+  //     if (!targetText || !authorId) {
+  //       logger.error(
+  //         'Message text or author ID is missing. Sending failure message.',
+  //       );
+  //       makeTradeRequestFailMessage({
+  //         channel,
+  //         client,
+  //         user,
+  //       });
+  //       return;
+  //     }
 
-      // Step 4: DM 채널 생성
-      logger.info(
-        `Creating DM channel between author: ${authorId} and user: ${user}`,
-      );
-      const dmResponse = await client.conversations.open({
-        users: `${authorId},${user}`,
-      });
+  //     // Step 4: DM 채널 생성
+  //     logger.info(
+  //       `Creating DM channel between author: ${authorId} and user: ${user}`,
+  //     );
+  //     const dmResponse = await client.conversations.open({
+  //       users: `${authorId},${user}`,
+  //     });
 
-      logger.debug('DM channel response:', dmResponse);
+  //     logger.debug('DM channel response:', dmResponse);
 
-      if (dmResponse.ok && dmResponse.channel?.id) {
-        const dmChannelId = dmResponse.channel.id;
-        logger.info(`DM channel created: ${dmChannelId}`);
+  //     if (dmResponse.ok && dmResponse.channel?.id) {
+  //       const dmChannelId = dmResponse.channel.id;
+  //       logger.info(`DM channel created: ${dmChannelId}`);
 
-        // Step 5: DM 메시지 보내기
-        const tradeMessage = `
-        안녕하세요! 🛒
-        아래의 메시지에 대해 거래를 요청하셨습니다:
-        > "${targetText}"
+  //       // Step 5: DM 메시지 보내기
+  //       const tradeMessage = `
+  //       안녕하세요! 🛒
+  //       아래의 메시지에 대해 거래를 요청하셨습니다:
+  //       > "${targetText}"
 
-        이 채널에서 거래를 진행해주세요.  
-        안전한 거래를 위해 필요한 추가 정보를 서로 확인하시고 협의하세요. 😊
-      `;
+  //       이 채널에서 거래를 진행해주세요.
+  //       안전한 거래를 위해 필요한 추가 정보를 서로 확인하시고 협의하세요. 😊
+  //     `;
 
-        await client.chat.postMessage({
-          channel: dmChannelId,
-          text: tradeMessage.trim(),
-        });
+  //       await client.chat.postMessage({
+  //         channel: dmChannelId,
+  //         text: tradeMessage.trim(),
+  //       });
 
-        logger.info('Trade request message sent to DM channel.');
-      } else {
-        logger.error('Failed to create DM channel:', dmResponse);
-      }
-    } catch (error) {
-      logger.error('Error during processing reaction_added event:', error);
-    }
-  });
+  //       logger.info('Trade request message sent to DM channel.');
+  //     } else {
+  //       logger.error('Failed to create DM channel:', dmResponse);
+  //     }
+  //   } catch (error) {
+  //     logger.error('Error during processing reaction_added event:', error);
+  //   }
+  // });
 
   // app.event('reaction_added', async ({ event, client, say, body }) => {
   //   const { user, reaction, item, item_user } = event;

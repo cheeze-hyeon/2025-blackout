@@ -14,6 +14,7 @@ import { registerAdminHelpCommand } from './admin_help';
 import { registerHoneyScore } from './network/honeyscore';
 import { useUpdateCrawlingLink } from './crawling';
 import { registerAskCommand } from './ask';
+import { listenReactionEvent } from './utils/listenReactionEvent';
 
 dotenv.config();
 
@@ -67,7 +68,8 @@ boltApp.action('button_click', async ({ ack, body, client }) => {
 });
 
 // 이벤트 핸들러 및 명령어 핸들러 등록
-registerReactionAddedEvent();
+// registerReactionAddedEvent();
+listenReactionEvent(boltApp);
 registerWelcomeEvents();
 registerAdminEvents();
 registerTradeEvents(boltApp);
@@ -78,6 +80,7 @@ registerHelpCommand(boltApp);
 registerAdminHelpCommand(boltApp);
 registerHoneyScore(boltApp);
 registerAskCommand(boltApp);
+
 setInterval(async () => {
   const result = await useUpdateCrawlingLink(
     'computer',
@@ -85,6 +88,7 @@ setInterval(async () => {
   );
   console.log(result);
 }, 10000);
+
 // 서버 실행
 (async () => {
   const port = process.env.PORT || 3000;
