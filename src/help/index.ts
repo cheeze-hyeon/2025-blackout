@@ -31,9 +31,9 @@ export function registerHelpCommand(app: App) {
 - *\`/score 네트워킹이름 조번호\` (예: \`/score 봄맞이 해커톤 3\`)*
     현재 소속되어있는 네트워킹 조의 *HoneyPot*🍯이 얼마나 차올랐는지 보여줘요. *HoneyPot*🍯을 가득 채워봅시다!
 
-- *\`/search\`*
+- *\`/searchInfo\`*
     관심있다고 등록한 키워드에 관련된 정보를 GloBee🐝가 DM으로 전달해드릴게요.
-    
+
 - *\`번역\`*
     문장에 국기(🇺🇸, 🇯🇵)로 감정표현을 표시하면, GloBee🐝가 해당 언어로 번역해줄게요. 
     If you need \`/help\` by other langauges, please push an emoji(🇺🇸, 🇯🇵) at this comment.
