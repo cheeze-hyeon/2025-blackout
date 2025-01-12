@@ -56,31 +56,59 @@ export async function requestTranslation(national: string, text: string) {
 
 // Icebreaking 봇봇
 export async function requestIcebreaking(team: string) {
-  const prompt = `Given a team name as input, create an icebreaking response designed to lighten the mood and help team members bond. The output should feel natural and casual, like something Korean university students would use in a friendly setting. The tone should be light, fun, and engaging. 
+  //   const prompt = `Given a team name as input, create an icebreaking response designed to lighten the mood and help team members bond. The output should feel natural and casual, like something Korean university students would use in a friendly setting. The tone should be light, fun, and engaging.
 
-The response must include:
-1. A fun or encouraging statement related to the team name to set the tone in the first sentence.  
-2. 3-4 questions that are specifically connected to the team name's meaning or characteristics.
+  // The response must include:
+  // 1. A fun or encouraging statement related to the team name to set the tone in the first sentence.
+  // 2. 3-4 questions that are specifically connected to the team name's meaning or characteristics.
 
-Important: Each question should creatively incorporate elements from the team name to make the connection more engaging and natural.
+  // Important: Each question should creatively incorporate elements from the team name to make the connection more engaging and natural.
 
-The response should be in ko-KR.
+  // The response should be in ko-KR.
 
-Example Input: "해커톤팀"
+  // Example team name: ${team}
 
+  // =================================================
+  // Example Input: "해커톤팀"
+
+  // =================================================
+  // Example Output:
+  // 해커톤팀 여러분! 48시간의 열정으로 세상을 바꿀 준비 되셨나요? 💻✨
+
+  // - 여러분의 첫 프로그래밍 경험은 언제였나요? 그때의 기억이 궁금해요!
+  // - 해커톤하면 떠오르는 나만의 필수 아이템이 있다면?
+  // - 만약 이번 해커톤에서 어떤 문제든 해결할 수 있다면, 어떤 문제를 해결하고 싶으신가요?`;
+  const prompt = `
+  Given a team name as input, create an icebreaking response designed to lighten the mood and help team members bond. The output should feel natural and casual, like something Korean university students would use in a friendly setting. The tone should be light, fun, and engaging.
+
+  Output Format:
+1. First sentence: A bright and encouraging greeting related to the team name (include emojis)
+2. 3-4 questions specifically connected to the meaning/characteristics of the team name
+3. Each question should naturally incorporate elements from the team name
+4. Overall tone should reflect casual Korean university student conversation style
+
+Tone & Manner:
+- Friendly and casual speech style
+- Natural expressions that Korean university students would actually use
+- Bright and energetic atmosphere
+- Appropriate use of emojis
+
+Input: ${team}
+
+=================================================
+Example Input: "Hackathon Team"
 Example Output:
-해커톤팀 여러분! 48시간의 열정으로 세상을 바꿀 준비 되셨나요? 💻✨
+Hackathon Team! Ready to change the world with 48 hours of passion? 💻✨
+* When was your first programming experience? I'd love to hear that memory!
+* Do you have any must-have items when you think of hackathons?
+* If you could solve any problem in this hackathon, what would you want to tackle?
 
-- 여러분의 첫 프로그래밍 경험은 언제였나요? 그때의 기억이 궁금해요!
-- 해커톤하면 떠오르는 나만의 필수 아이템이 있다면?
-- 만약 이번 해커톤에서 어떤 문제든 해결할 수 있다면, 어떤 문제를 해결하고 싶으신가요?
-
-Alternative example for "봄맞이팀":
-안녕하세요 봄맞이팀! 새로운 시작을 함께 할 여러분을 만나서 반가워요 🌱
-
-- 봄이 오면 꼭 하고 싶은 버킷리스트가 있나요?
-- 우리 팀에 봄바람 같은 새로운 변화를 준다면 어떤 걸 하고 싶으신가요?
-- 인생의 가장 설렘 가득했던 '봄날'은 언제였나요?`;
+Required Elements:
+- Must be in Korean (ko-KR)
+- First sentence must include team name and set a positive tone
+- Questions must creatively connect to team name elements
+- Natural flow maintaining friendly university student atmosphere
+  `;
 
   const responseText = await callBedrockModel(prompt);
   return responseText;
