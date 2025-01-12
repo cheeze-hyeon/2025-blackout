@@ -17,14 +17,14 @@ export const getNextUrlToBegin = async (entryUrl: string) => {
     entryUrl,
     page,
   );
-  console.log('get entry url');
+  // console.log('get entry url');
 
   const nextLinkByA = await getNextPageLinkByClickA(page, browser);
   if (nextLinkByA) {
     await page.goto(nextLinkByA);
     const { url, textContent } = await getDocumentTextOfUrl(nextLinkByA, page);
     await browser.close();
-    console.log('get a', url, entryUrl);
+    // console.log('get a', url, entryUrl);
     const result = [
       { link: url, text: textContent },
       { link: entryUrl, text: entryTextContent },
@@ -39,9 +39,9 @@ export const getNextUrlToBegin = async (entryUrl: string) => {
       nextLinkByButton,
       page,
     );
-    console.log('get button', url, entryUrl);
+    // console.log('get button', url, entryUrl);
     await browser.close();
-    console.log(url, entryUrl);
+    // console.log(url, entryUrl);
     const result = [
       { link: url, text: textContent },
       { link: entryUrl, text: entryTextContent },

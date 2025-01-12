@@ -10,7 +10,7 @@ export const getNextPageLinkByClickButton = async (
   page: Page,
   browser: Browser,
 ) => {
-  console.log('button search');
+  // console.log('button search');
   const fallbackUrl = page.url();
   const allButtons = await page.$$('button');
   try {
@@ -29,7 +29,7 @@ export const getNextPageLinkByClickButton = async (
 };
 
 export const getNextPageLinkByClickA = async (page: Page, browser: Browser) => {
-  console.log('a search');
+  // console.log('a search');
   const fallbackUrl = page.url();
   const allA = await page.$$('a');
   if (allA.length !== 0) {
