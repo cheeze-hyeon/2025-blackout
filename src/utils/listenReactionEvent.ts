@@ -48,6 +48,8 @@ export const listenReactionEvent = (app: App) => {
         ? 'trade'
         : null;
 
+      logger.info(`Reaction type: ${reactionType}`);
+
       if (!targetText || !authorId) {
         logger.error(
           'Message text or author ID is missing. Sending failure message.',
@@ -102,15 +104,6 @@ export const listenReactionEvent = (app: App) => {
 
         logger.info('Translation response sent to user.');
       } else if (reactionType === 'trade') {
-        // Trade-specific logic
-        const isTradeAcceptReaction = isTradeAcceptRequestReaction(reaction);
-        if (!isTradeAcceptReaction) {
-          logger.info(
-            `Reaction "${reaction}" is not a trade accept reaction. Ignoring.`,
-          );
-          return;
-        }
-
         logger.info(
           `Creating DM channel between author: ${authorId} and user: ${user}`,
         );

@@ -68,8 +68,7 @@ boltApp.action('button_click', async ({ ack, body, client }) => {
 });
 
 // 이벤트 핸들러 및 명령어 핸들러 등록
-// registerReactionAddedEvent();
-listenReactionEvent(boltApp);
+registerReactionAddedEvent();
 registerWelcomeEvents();
 registerAdminEvents();
 registerTradeEvents(boltApp);
