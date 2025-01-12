@@ -19,7 +19,7 @@ export function registerAskCommand(boltApp: App) {
 
       // 사용자에게 응답
       await respond({
-        text: `*Q. ${userInput}*\n\nA.\n${responseText}`,
+        text: `*Q. ${userInput}*\n\n *A.* \n${responseText}`,
         response_type: 'in_channel', // 'in_channel'로 설정하면 채널에 메시지 출력, 'ephemeral'로 설정하면 사용자에게만 출력
       });
     } catch (error) {
