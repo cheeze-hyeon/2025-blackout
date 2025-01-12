@@ -1,4 +1,4 @@
-import { App, Logger, BlockAction } from '@slack/bolt'; // Command 제거
+import { App, Logger, BlockAction, ButtonAction } from '@slack/bolt'; // Command 제거
 import { WebClient } from '@slack/web-api';
 import { isTradeAcceptRequestReaction } from './util';
 
@@ -218,105 +218,97 @@ export function registerTradeEvents(app: App) {
         text: '거래 정보가 성공적으로 저장되었습니다! <#C088965R4FL|물건-삽니다-팝니다> 채널을 통해 확인해주세요!',
       });
 
-      // await client.chat.postMessage({
-      //   channel: 'C088965R4FL',
-      //   text: `New Trade Information: ${tradeInfo.name}`, // 기본 텍스트 (필수)
-      //   blocks: [
-      //     {
-      //       type: 'header',
-      //       text: {
-      //         type: 'plain_text',
-      //         text: '📢 새로운 거래 등록!',
-      //         emoji: true,
-      //       },
-      //     },
-      //     {
-      //       type: 'section',
-      //       fields: [
-      //         {
-      //           type: 'mrkdwn',
-      //           text: `*물품명:*\n${tradeInfo.name}`,
-      //         },
-      //         {
-      //           type: 'mrkdwn',
-      //           text: `*상태:*\n${tradeInfo.condition}`,
-      //         },
-      //         {
-      //           type: 'mrkdwn',
-      //           text: `*가격:*\n${tradeInfo.price}`,
-      //         },
-      //         {
-      //           type: 'mrkdwn',
-      //           text: `*거래 장소:*\n${tradeInfo.place}`,
-      //         },
-      //       ],
-      //     },
-      //     {
-      //       type: 'section',
-      //       text: {
-      //         type: 'mrkdwn',
-      //         text: `*부가 설명:*\n${tradeInfo.description}`,
-      //       },
-      //     },
-      //     {
-      //       type: 'divider',
-      //     },
-      //     {
-      //       type: 'context',
-      //       elements: [
-      //         {
-      //           type: 'mrkdwn',
-      //           text: 'Posted by GloBee🐝',
-      //         },
-      //       ],
-      //     },
-      //   ],
-      // });
-      app.action('buy_action', async ({ body, ack, client, logger }) => {
-        await ack(); // 슬랙에 응답
+      app.action<BlockAction>(
+        'buy_action',
+        async ({ body, ack, client, logger }) => {
+          await ack(); // 슬랙에 응답
 
-        const userId = body.user.id; // 버튼을 클릭한 사용자 ID
-
-        try {
-          // DM 채널 생성
-          const dmResponse = await client.conversations.open({ users: userId });
-          const dmChannelId = dmResponse.channel?.id;
-
-          if (dmChannelId) {
-            await client.chat.postMessage({
-              channel: dmChannelId,
-              text: `구매 요청이 접수되었습니다! 🎉\n거래를 진행해주세요.`,
-            });
-            logger.info(`Sent '구매할래요' DM to ${userId}`);
+          // 타입 가드: 버튼 액션인지 확인
+          const action = body.actions[0];
+          if (action.type !== 'button') {
+            logger.error(`Action is not a button: ${JSON.stringify(action)}`);
+            return;
           }
-        } catch (error) {
-          logger.error('Error handling buy_action:', error);
-        }
-      });
 
-      app.action('inquiry_action', async ({ body, ack, client, logger }) => {
-        await ack(); // 슬랙에 응답
+          const initiatorId = body.user.id; // 버튼을 클릭한 사용자 ID
+          const targetUserId = (action as ButtonAction).value; // 버튼의 value 값 가져오기
 
-        const userId = body.user.id; // 버튼을 클릭한 사용자 ID
+          try {
+            // DM 채널 생성
+            logger.info(
+              `Creating DM channel between initiator: ${initiatorId} and target: ${targetUserId}`,
+            );
 
-        try {
-          // DM 채널 생성
-          const dmResponse = await client.conversations.open({
-            users: userId,
-          });
-          const dmChannelId = dmResponse.channel?.id;
-
-          if (dmChannelId) {
-            await client.chat.postMessage({
-              channel: dmChannelId,
-              text: `문의 요청이 접수되었습니다! ❓\n판매자와 연락해 더 많은 정보를 받아보세요.`,
+            const dmResponse = await client.conversations.open({
+              users: `${initiatorId},${targetUserId}`,
             });
-            logger.info(`Sent '궁금해요' DM to ${userId}`);
+
+            if (dmResponse.ok && dmResponse.channel?.id) {
+              const dmChannelId = dmResponse.channel.id;
+
+              // DM 메시지 보내기
+              await client.chat.postMessage({
+                channel: dmChannelId,
+                text: `안녕하세요! <@${targetUserId}>님과의 거래를 시작합니다. 🎉\n안전한 거래를 진행해주세요!`,
+              });
+
+              logger.info(
+                `DM channel created successfully. Message sent to DM: ${dmChannelId}`,
+              );
+            } else {
+              logger.error('Failed to create DM channel:', dmResponse);
+            }
+          } catch (error) {
+            logger.error('Error handling buy_action:', error);
           }
-        } catch (error) {
-          logger.error('Error handling inquiry_action:', error);
-        }
-      });
+        },
+      );
+
+      app.action<BlockAction>(
+        'inquiry_action',
+        async ({ body, ack, client, logger }) => {
+          await ack(); // 슬랙에 응답
+
+          // 타입 가드: 버튼 액션인지 확인
+          const action = body.actions[0];
+          if (action.type !== 'button') {
+            logger.error(`Action is not a button: ${JSON.stringify(action)}`);
+            return;
+          }
+
+          const initiatorId = body.user.id; // 버튼을 클릭한 사용자 ID
+          const targetUserId = (action as ButtonAction).value; // 버튼의 value 값 가져오기
+
+          try {
+            // DM 채널 생성
+            logger.info(
+              `Creating DM channel between initiator: ${initiatorId} and target: ${targetUserId}`,
+            );
+
+            const dmResponse = await client.conversations.open({
+              users: `${initiatorId},${targetUserId}`,
+            });
+
+            if (dmResponse.ok && dmResponse.channel?.id) {
+              const dmChannelId = dmResponse.channel.id;
+
+              // DM 메시지 보내기
+              await client.chat.postMessage({
+                channel: dmChannelId,
+                text: `문의 요청이 접수되었습니다! ❓\n판매자와 연락해 더 많은 정보를 받아보세요.`,
+              });
+
+              logger.info(
+                `DM channel created successfully. Message sent to DM: ${dmChannelId}`,
+              );
+            } else {
+              logger.error('Failed to create DM channel:', dmResponse);
+            }
+          } catch (error) {
+            logger.error('Error handling inquiry_action:', error);
+          }
+        },
+      );
 
       await client.chat.postMessage({
         channel: 'C088965R4FL',
@@ -370,6 +362,7 @@ export function registerTradeEvents(app: App) {
                 },
                 action_id: 'buy_action',
                 style: 'primary',
+                value: userId,
               },
               {
                 type: 'button',
@@ -379,6 +372,7 @@ export function registerTradeEvents(app: App) {
                   emoji: true,
                 },
                 action_id: 'inquiry_action',
+                value: userId,
               },
             ],
           },
@@ -390,7 +384,7 @@ export function registerTradeEvents(app: App) {
             elements: [
               {
                 type: 'mrkdwn',
-                text: 'Posted by GloBee🐝',
+                text: `Posted by GloBee🐝`,
               },
             ],
           },
