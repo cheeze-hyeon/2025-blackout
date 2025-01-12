@@ -214,7 +214,7 @@ export function registerTradeEvents(app: App) {
 
       await client.chat.postMessage({
         channel: userId,
-        text: '거래 정보가 성공적으로 저장되었습니다! 감사합니다.',
+        text: '거래 정보가 성공적으로 저장되었습니다! <#C088965R4FL|물건-삽니다-팝니다> 채널을 통해 확인해주세요!',
       });
 
       await client.chat.postMessage({
