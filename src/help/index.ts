@@ -17,10 +17,10 @@ export function registerHelpCommand(app: App) {
     GloBee🐝 도움말을 출력해요.
 
 - *\`/globee_start\`*
-    GloBee🐝 사용자 정보를 다시 입력할 수 있어요.
+    사용자 정보를 다시 입력할 수 있어요.
 
 - *\`/ask 자유로운질문\`*
-    GloBee🐝에게 자유롭게 질문하세요! 친절하게 답변해줄게요.
+    자유롭게 질문하세요! GloBee🐝가 친절하게 답변해줄게요.
     
 - *\`/today\`*
     *#오늘의-회화* 채널에 지정된 국가의 오늘의 회화 구문을 제공해요.
