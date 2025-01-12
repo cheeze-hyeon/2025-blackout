@@ -220,57 +220,63 @@ export function registerTradeEvents(app: App) {
 
       await client.chat.postMessage({
         channel: 'C088965R4FL',
-        text: `New Trade Information: ${tradeInfo.name}`, // 기본 텍스트 (필수)
-        blocks: [
-          {
-            type: 'header',
-            text: {
-              type: 'plain_text',
-              text: '📢 새로운 거래 등록!',
-              emoji: true,
-            },
-          },
-          {
-            type: 'section',
-            fields: [
-              {
-                type: 'mrkdwn',
-                text: `*물품명:*\n${tradeInfo.name}`,
-              },
-              {
-                type: 'mrkdwn',
-                text: `*상태:*\n${tradeInfo.condition}`,
-              },
-              {
-                type: 'mrkdwn',
-                text: `*가격:*\n${tradeInfo.price}`,
-              },
-              {
-                type: 'mrkdwn',
-                text: `*거래 장소:*\n${tradeInfo.place}`,
-              },
-            ],
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `*부가 설명:*\n${tradeInfo.description}`,
-            },
-          },
-          {
-            type: 'divider',
-          },
-          {
-            type: 'context',
-            elements: [
-              {
-                type: 'mrkdwn',
-                text: 'Posted by GloBee🐝',
-              },
-            ],
-          },
-        ],
+        text: `New Trade Information: ${tradeInfo.name}
+        Condition: ${tradeInfo.condition}
+        Price: ${tradeInfo.price}
+        Place: ${tradeInfo.place}
+        Description: ${tradeInfo.description}`,
+
+        // text: `New Trade Information: ${tradeInfo.name}`, // 기본 텍스트 (필수)
+        // blocks: [
+        //   {
+        //     type: 'header',
+        //     text: {
+        //       type: 'plain_text',
+        //       text: '📢 새로운 거래 등록!',
+        //       emoji: true,
+        //     },
+        //   },
+        //   {
+        //     type: 'section',
+        //     fields: [
+        //       {
+        //         type: 'mrkdwn',
+        //         text: `*물품명:*\n${tradeInfo.name}`,
+        //       },
+        //       {
+        //         type: 'mrkdwn',
+        //         text: `*상태:*\n${tradeInfo.condition}`,
+        //       },
+        //       {
+        //         type: 'mrkdwn',
+        //         text: `*가격:*\n${tradeInfo.price}`,
+        //       },
+        //       {
+        //         type: 'mrkdwn',
+        //         text: `*거래 장소:*\n${tradeInfo.place}`,
+        //       },
+        //     ],
+        //   },
+        //   {
+        //     type: 'section',
+        //     text: {
+        //       type: 'mrkdwn',
+        //       text: `*부가 설명:*\n${tradeInfo.description}`,
+        //     },
+        //   },
+        //   {
+        //     type: 'divider',
+        //   },
+        //   {
+        //     type: 'context',
+        //     elements: [
+        //       {
+        //         type: 'mrkdwn',
+        //         text: 'Posted by GloBee🐝',
+        //       },
+        //     ],
+        //   },
+        // ],
       });
       console.log(`거래 정보 저장됨: ${userId}`, tradeInfo);
     } catch (error) {
